@@ -767,26 +767,6 @@ select:focus {
   line-height: 1.25;
 }
 
-.name-settings {
-  display: grid;
-  gap: 10px;
-  margin-bottom: 14px;
-}
-
-.team-name-field {
-  padding: 10px;
-  border: 1px solid var(--team-border);
-  border-left: 6px solid var(--team-color);
-  border-radius: var(--radius);
-  background: var(--team-soft);
-}
-
-.team-name-field input {
-  border-color: var(--team-border);
-  color: var(--team-color);
-  font-weight: 900;
-}
-
 .history {
   margin-top: 18px;
   padding: 18px;

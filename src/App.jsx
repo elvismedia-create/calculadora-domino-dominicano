@@ -524,16 +524,6 @@ function App() {
             <span>La mesa</span>
             <strong>Domino con bandera, color y conteo rapido</strong>
           </div>
-          <div className="name-settings">
-            <label className="field team-name-field team-0">
-              <span>Nombre equipo rojo</span>
-              <input type="text" value={state.teams[0]} onChange={(event) => updateTeam(0, event.target.value)} />
-            </label>
-            <label className="field team-name-field team-1">
-              <span>Nombre equipo azul</span>
-              <input type="text" value={state.teams[1]} onChange={(event) => updateTeam(1, event.target.value)} />
-            </label>
-          </div>
           <div className="settings">
             <label className="field">
               <span>Meta</span>
