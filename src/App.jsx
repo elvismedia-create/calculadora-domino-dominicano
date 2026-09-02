@@ -8,8 +8,6 @@ const STORE_KEY = "dominican-domino-calculator-react-v1";
 const initialState = {
   teams: ["Equipo A", "Equipo B"],
   target: 200,
-  capicuaValue: 25,
-  chuchazoValue: 30,
   rounds: [],
 };
 
@@ -145,13 +143,6 @@ function App() {
   const [state, setState] = useState(loadState);
   const [winner, setWinner] = useState(0);
   const [points, setPoints] = useState(0);
-  const [note, setNote] = useState("");
-  const [bonuses, setBonuses] = useState({
-    capicua: false,
-    trancado: false,
-    chuchazo: false,
-    zapato: false,
-  });
   const [toast, setToast] = useState("");
   const [winnerMessage, setWinnerMessage] = useState(null);
   const [scanner, setScanner] = useState({ image: "", dots: [], sensitivity: 86, analyzed: false });
@@ -184,10 +175,7 @@ function App() {
     [state.rounds],
   );
 
-  const roundTotal =
-    cleanNumber(points) +
-    (bonuses.capicua ? state.capicuaValue : 0) +
-    (bonuses.chuchazo ? state.chuchazoValue : 0);
+  const roundTotal = cleanNumber(points);
 
   const leaderScore = Math.max(...totals);
 
@@ -224,28 +212,17 @@ function App() {
     setState((current) => ({ ...current, [key]: Math.max(cleanNumber(value), minimum) }));
   }
 
-  function toggleBonus(key) {
-    setBonuses((current) => ({ ...current, [key]: !current[key] }));
-  }
-
   function addRound() {
-    if (!roundTotal && !bonuses.zapato && !bonuses.trancado) {
-      setToast("Anota puntos o marca una jugada.");
+    if (!roundTotal) {
+      setToast("Anota puntos primero.");
       return;
     }
-
-    const labels = [];
-    if (bonuses.capicua) labels.push(`capicua +${state.capicuaValue}`);
-    if (bonuses.chuchazo) labels.push(`chuchazo +${state.chuchazoValue}`);
-    if (bonuses.trancado) labels.push("trancado");
-    if (bonuses.zapato) labels.push("zapato");
 
     const round = {
       team: winner,
       base: cleanNumber(points),
       total: roundTotal,
-      bonuses: labels,
-      note: note.trim(),
+      note: "",
       at: new Date().toISOString(),
     };
 
@@ -254,15 +231,11 @@ function App() {
 
     setState((current) => ({ ...current, rounds: nextRounds }));
     setPoints(0);
-    setNote("");
-    setBonuses({ capicua: false, trancado: false, chuchazo: false, zapato: false });
 
-    if (nextScore >= state.target || bonuses.zapato) {
+    if (nextScore >= state.target) {
       setWinnerMessage({
         title: `${state.teams[winner]} gana`,
-        text: bonuses.zapato
-          ? `Victoria marcada por zapato. Marcador final: ${nextScore} puntos.`
-          : `Llego a ${nextScore} puntos de una meta de ${state.target}.`,
+        text: `Llego a ${nextScore} puntos de una meta de ${state.target}.`,
       });
     }
   }
@@ -363,10 +336,10 @@ function App() {
             Marcador rapido para partidas por parejas: suma puntos, capicua, trancado y guarda la mesa aunque cierres el navegador.
           </p>
           <div className="dominican-tags" aria-label="Detalles de juego">
-            <span>Capicua</span>
             <span>Tranque</span>
-            <span>Chuchazo</span>
             <span>200 puntos</span>
+            <span>Domino RD</span>
+            <span>Mesa caliente</span>
           </div>
         </div>
         <div className="hero-emblem">
@@ -425,7 +398,7 @@ function App() {
             </div>
 
             <div className="quick" aria-label="Puntos rapidos">
-              {[10, 20, 25, 50].map((value) => (
+              {[10, 20, 30, 40].map((value) => (
                 <button key={value} type="button" onClick={() => setPoints(cleanNumber(points) + value)}>
                   +{value}
                 </button>
@@ -510,18 +483,6 @@ function App() {
               )}
             </section>
 
-            <div className="bonus-grid">
-              <BonusButton active={bonuses.capicua} label="Capicua" value={`+${state.capicuaValue}`} onClick={() => toggleBonus("capicua")} />
-              <BonusButton active={bonuses.trancado} label="Trancado" value="+0" onClick={() => toggleBonus("trancado")} />
-              <BonusButton active={bonuses.chuchazo} label="Chuchazo" value={`+${state.chuchazoValue}`} onClick={() => toggleBonus("chuchazo")} />
-              <BonusButton active={bonuses.zapato} label="Zapato" value="Fin" onClick={() => toggleBonus("zapato")} />
-            </div>
-
-            <label className="field">
-              <span>Nota opcional</span>
-              <input type="text" placeholder="Ej. salida por doble seis" value={note} onChange={(event) => setNote(event.target.value)} />
-            </label>
-
             <div className="actions">
               <button className="btn primary" type="button" onClick={addRound}>
                 <Save size={18} />
@@ -546,8 +507,7 @@ function App() {
                     <div>
                       <strong>{state.teams[round.team]}</strong>
                       <small>
-                        {[round.base ? `${round.base} contados` : "sin puntos contados", ...round.bonuses].join(" · ")}
-                        {round.note ? ` · ${round.note}` : ""}
+                        {round.base ? `${round.base} contados` : "sin puntos contados"}
                       </small>
                     </div>
                     <span className="round-points">+{round.total}</span>
@@ -579,14 +539,6 @@ function App() {
               <span>Meta</span>
               <input type="number" min="50" max="1000" step="5" value={state.target} onChange={(event) => updateSetting("target", event.target.value, 50)} />
             </label>
-            <label className="field">
-              <span>Capicua</span>
-              <input type="number" min="0" max="100" step="5" value={state.capicuaValue} onChange={(event) => updateSetting("capicuaValue", event.target.value)} />
-            </label>
-            <label className="field">
-              <span>Chuchazo</span>
-              <input type="number" min="0" max="100" step="5" value={state.chuchazoValue} onChange={(event) => updateSetting("chuchazoValue", event.target.value)} />
-            </label>
           </div>
 
           <div className="actions">
@@ -606,18 +558,13 @@ function App() {
               <div>
                 <strong>Total de la mano</strong>
                 <small>
-                  {[
-                    bonuses.capicua && `capicua +${state.capicuaValue}`,
-                    bonuses.chuchazo && `chuchazo +${state.chuchazoValue}`,
-                    bonuses.trancado && "trancado",
-                    bonuses.zapato && "zapato",
-                  ].filter(Boolean).join(" · ") || "0 bonos"}
+                  Puntos listos para anotar
                 </small>
               </div>
               <span className="round-points">{roundTotal}</span>
             </div>
             <p className="subtitle compact">
-              Ajusta los valores segun las reglas de tu mesa. El trancado queda como marca de historial; suma los puntos que entren en puntos contados.
+              Ajusta la meta de la mesa y anota cada mano al equipo correspondiente.
             </p>
           </div>
         </aside>
@@ -645,15 +592,6 @@ function App() {
         {toast}
       </div>
     </main>
-  );
-}
-
-function BonusButton({ active, label, value, onClick }) {
-  return (
-    <button className="toggle" type="button" aria-pressed={active} onClick={onClick}>
-      <span>{label}</span>
-      <strong>{value}</strong>
-    </button>
   );
 }
 

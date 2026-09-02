@@ -498,32 +498,6 @@ select:focus {
   transform: translateY(-1px);
 }
 
-.bonus-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 8px;
-  margin: 14px 0;
-}
-
-.toggle {
-  min-height: 46px;
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  background: #fff;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  padding: 0 12px;
-  font-weight: 850;
-}
-
-.toggle[aria-pressed="true"] {
-  color: #fff;
-  background: linear-gradient(90deg, var(--flag-blue), var(--flag-red));
-  border-color: transparent;
-}
-
 .actions {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -986,8 +960,7 @@ select:focus {
     padding: 14px;
   }
 
-  .actions,
-  .bonus-grid {
+  .actions {
     grid-template-columns: 1fr;
   }
 
