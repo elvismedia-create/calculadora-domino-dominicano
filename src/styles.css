@@ -11,6 +11,8 @@
   --flag-blue: #002d62;
   --team-red: #ce1126;
   --team-blue: #0057b8;
+  --sky: #49a7e8;
+  --palm: #159957;
   --green: #16784a;
   --gold: #f4c430;
   --shadow: 0 18px 44px rgba(24, 24, 24, .12);
@@ -23,11 +25,14 @@ body {
   margin: 0;
   min-height: 100vh;
   background:
+    radial-gradient(circle at 14% 12%, rgba(73,167,232,.24), transparent 24%),
+    radial-gradient(circle at 92% 8%, rgba(244,196,48,.24), transparent 22%),
     linear-gradient(90deg, transparent calc(50% - 18px), rgba(255,255,255,.84) calc(50% - 18px), rgba(255,255,255,.84) calc(50% + 18px), transparent calc(50% + 18px)),
     linear-gradient(180deg, transparent calc(50% - 18px), rgba(255,255,255,.84) calc(50% - 18px), rgba(255,255,255,.84) calc(50% + 18px), transparent calc(50% + 18px)),
+    repeating-linear-gradient(45deg, rgba(0,45,98,.055) 0 8px, transparent 8px 18px),
     linear-gradient(135deg, rgba(0,45,98,.12) 0 25%, transparent 25% 50%, rgba(206,17,38,.1) 50% 75%, transparent 75%),
     var(--paper);
-  background-size: 100% 100%, 100% 100%, 260px 260px, auto;
+  background-size: auto, auto, 100% 100%, 100% 100%, 180px 180px, 260px 260px, auto;
 }
 
 button,
@@ -54,6 +59,7 @@ button {
   gap: 18px;
   align-items: end;
   padding: 20px 0 24px;
+  position: relative;
 }
 
 .topbar::before {
@@ -71,6 +77,59 @@ h1 {
   line-height: .9;
   letter-spacing: 0;
   text-transform: uppercase;
+  color: var(--flag-blue);
+  text-shadow: 3px 3px 0 rgba(206,17,38,.14);
+}
+
+.brand-strip,
+.dominican-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.brand-strip {
+  margin-bottom: 12px;
+}
+
+.brand-strip span,
+.dominican-tags span {
+  min-height: 30px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 0 11px;
+  font-size: .78rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0;
+}
+
+.brand-strip span:first-child {
+  background: var(--flag-blue);
+  color: #fff;
+}
+
+.brand-strip span:last-child {
+  background: var(--flag-red);
+  color: #fff;
+}
+
+.dominican-tags {
+  margin-top: 14px;
+}
+
+.dominican-tags span {
+  border: 1px solid rgba(0,45,98,.16);
+  background: rgba(255,255,255,.82);
+  color: var(--flag-blue);
+  box-shadow: 0 8px 18px rgba(0,45,98,.08);
+}
+
+.dominican-tags span:nth-child(2n) {
+  color: var(--flag-red);
 }
 
 .subtitle {
@@ -93,13 +152,38 @@ h1 {
   align-items: center;
 }
 
+.hero-emblem {
+  display: grid;
+  justify-items: center;
+  gap: 12px;
+  padding: 16px;
+  border-radius: var(--radius);
+  background:
+    linear-gradient(90deg, var(--flag-blue) 0 42%, #fff 42% 58%, var(--flag-red) 58%),
+    #fff;
+  box-shadow: var(--shadow);
+}
+
+.rd-badge {
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: #fff;
+  color: var(--flag-blue);
+  border: 5px solid var(--flag-red);
+  box-shadow: inset 0 0 0 4px var(--flag-blue);
+  font-weight: 950;
+}
+
 .tile {
   width: 54px;
   height: 104px;
   border: 3px solid var(--ink);
   border-radius: 7px;
   background: #fff;
-  box-shadow: 0 8px 0 rgba(24,24,24,.12);
+  box-shadow: 0 8px 0 rgba(0,45,98,.18);
   display: grid;
   grid-template-rows: 1fr 1fr;
   overflow: hidden;
@@ -147,10 +231,11 @@ h1 {
 .panel,
 .score-card,
 .history {
-  background: rgba(255,255,255,.92);
+  background: rgba(255,255,255,.94);
   border: 1px solid var(--line);
   border-radius: var(--radius);
   box-shadow: var(--shadow);
+  backdrop-filter: blur(10px);
 }
 
 .scoreboard {
@@ -167,6 +252,18 @@ h1 {
   overflow: hidden;
   border-top: 8px solid var(--team-color);
   transition: border-color .18s ease, box-shadow .18s ease, transform .18s ease;
+}
+
+.score-card::after {
+  content: "";
+  position: absolute;
+  right: -34px;
+  bottom: -46px;
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  border: 18px solid var(--team-soft);
+  pointer-events: none;
 }
 
 .team-0 {
@@ -294,6 +391,17 @@ h1 {
 
 .panel {
   padding: 18px;
+  position: relative;
+  overflow: hidden;
+}
+
+.panel::before,
+.history::before {
+  content: "";
+  display: block;
+  height: 5px;
+  margin: -18px -18px 14px;
+  background: linear-gradient(90deg, var(--flag-blue), #fff 34% 42%, var(--flag-red) 42% 76%, var(--gold));
 }
 
 .panel h2,
@@ -401,7 +509,7 @@ select:focus {
   min-height: 46px;
   border: 1px solid var(--line);
   border-radius: var(--radius);
-  background: #fffdf8;
+  background: #fff;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -412,8 +520,8 @@ select:focus {
 
 .toggle[aria-pressed="true"] {
   color: #fff;
-  background: var(--ink);
-  border-color: var(--ink);
+  background: linear-gradient(90deg, var(--flag-blue), var(--flag-red));
+  border-color: transparent;
 }
 
 .actions {
@@ -449,19 +557,20 @@ select:focus {
 }
 
 .primary {
-  background: var(--red);
+  background: linear-gradient(90deg, var(--flag-red), #e42b3f);
   color: #fff;
   box-shadow: 0 12px 24px rgba(201,25,34,.24);
 }
 
 .secondary {
-  background: #edf2fb;
-  color: var(--ink);
+  background: var(--flag-blue);
+  color: #fff;
 }
 
 .ghost {
   background: transparent;
-  border: 1px solid var(--line);
+  border: 1px solid rgba(0,45,98,.22);
+  color: var(--flag-blue);
 }
 
 .quick {
@@ -477,6 +586,8 @@ select:focus {
   background: #fff;
   border: 1px solid var(--line);
   font-weight: 900;
+  color: var(--flag-blue);
+  box-shadow: inset 0 -3px 0 rgba(206,17,38,.16);
 }
 
 .scanner {
@@ -657,6 +768,51 @@ select:focus {
   margin-top: 14px;
 }
 
+.ambience {
+  display: grid;
+  gap: 4px;
+  margin-bottom: 14px;
+  padding: 13px;
+  border-radius: var(--radius);
+  color: #fff;
+  background:
+    linear-gradient(135deg, rgba(0,45,98,.94), rgba(0,87,184,.88) 48%, rgba(206,17,38,.92)),
+    var(--flag-blue);
+  box-shadow: 0 16px 34px rgba(0,45,98,.18);
+}
+
+.ambience span {
+  font-size: .72rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  opacity: .82;
+}
+
+.ambience strong {
+  font-size: 1rem;
+  line-height: 1.25;
+}
+
+.name-settings {
+  display: grid;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.team-name-field {
+  padding: 10px;
+  border: 1px solid var(--team-border);
+  border-left: 6px solid var(--team-color);
+  border-radius: var(--radius);
+  background: var(--team-soft);
+}
+
+.team-name-field input {
+  border-color: var(--team-border);
+  color: var(--team-color);
+  font-weight: 900;
+}
+
 .history {
   margin-top: 18px;
   padding: 18px;
@@ -795,6 +951,11 @@ select:focus {
     justify-content: start;
   }
 
+  .hero-emblem {
+    justify-items: start;
+    width: fit-content;
+  }
+
   .tile {
     width: 44px;
     height: 84px;
@@ -840,6 +1001,18 @@ select:focus {
 
   .badge {
     justify-content: flex-start;
+  }
+
+  .brand-strip,
+  .dominican-tags {
+    gap: 6px;
+  }
+
+  .brand-strip span,
+  .dominican-tags span {
+    min-height: 28px;
+    font-size: .7rem;
+    padding: 0 9px;
   }
 
   .scanner-head {

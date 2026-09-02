@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { Camera, CameraOff, RotateCcw, Save, ScanLine, Shuffle, Trophy, Undo2 } from "lucide-react";
+import { Camera, CameraOff, Flag, Music2, RotateCcw, Save, ScanLine, Shuffle, Trophy, Undo2 } from "lucide-react";
 import { createRoot } from "react-dom/client";
 import "./styles.css";
 
@@ -155,6 +155,7 @@ function App() {
   const [toast, setToast] = useState("");
   const [winnerMessage, setWinnerMessage] = useState(null);
   const [scanner, setScanner] = useState({ image: "", dots: [], sensitivity: 86, analyzed: false });
+  const [scannerOpen, setScannerOpen] = useState(false);
   const imageRef = useRef(null);
   const videoRef = useRef(null);
   const streamRef = useRef(null);
@@ -290,6 +291,7 @@ function App() {
 
   async function startCamera() {
     try {
+      setScannerOpen(true);
       stopCamera();
       const stream = await navigator.mediaDevices.getUserMedia({
         video: { facingMode: { ideal: "environment" }, width: { ideal: 1280 }, height: { ideal: 720 } },
@@ -352,14 +354,27 @@ function App() {
     <main className="app">
       <header className="topbar">
         <div>
+          <div className="brand-strip" aria-label="Estilo dominicano">
+            <span><Flag size={16} /> Republica Dominicana</span>
+            <span><Music2 size={16} /> Mesa prendia</span>
+          </div>
           <h1>Calculadora Domino Dominicano</h1>
           <p className="subtitle">
             Marcador rapido para partidas por parejas: suma puntos, capicua, trancado y guarda la mesa aunque cierres el navegador.
           </p>
+          <div className="dominican-tags" aria-label="Detalles de juego">
+            <span>Capicua</span>
+            <span>Tranque</span>
+            <span>Chuchazo</span>
+            <span>200 puntos</span>
+          </div>
         </div>
-        <div className="domino-mark">
-          <DominoTile />
-          <DominoTile blankBottom />
+        <div className="hero-emblem">
+          <div className="rd-badge">RD</div>
+          <div className="domino-mark">
+            <DominoTile />
+            <DominoTile blankBottom />
+          </div>
         </div>
       </header>
 
@@ -421,73 +436,78 @@ function App() {
               <div className="scanner-head">
                 <div>
                   <h3>Calcular por foto</h3>
-                  <p>Abre la camara, enfoca las fichas y captura el conteo.</p>
+                  <p>{scannerOpen ? "Enfoca las fichas y captura el conteo." : "Pulsa camara para abrir el visor."}</p>
                 </div>
                 <div className="camera-actions">
                   <button className="capture-btn" type="button" onClick={startCamera}>
                     <Camera size={18} />
                     Camara
                   </button>
-                  <button className="capture-btn capture-btn--light" type="button" onClick={stopCamera}>
+                  <button className="capture-btn capture-btn--light" type="button" onClick={() => {
+                    stopCamera();
+                    setScannerOpen(false);
+                  }}>
                     <CameraOff size={18} />
                     Cerrar
                   </button>
                 </div>
               </div>
 
-              <div className="scanner-body">
-                <div className="camera-box">
-                  <video ref={videoRef} playsInline muted />
-                  <button className="btn primary" type="button" onClick={captureFromCamera}>
-                    <Camera size={18} />
-                    Capturar
-                  </button>
-                </div>
-                {scanner.image && (
-                  <div className="photo-box">
-                    <img ref={imageRef} src={scanner.image} alt="Fichas para calcular" onLoad={scanImage} />
-                    {scanner.dots.map((dot, index) => (
-                      <span
-                        className="detected-dot"
-                        key={`${dot.x}-${dot.y}-${index}`}
-                        style={{
-                          left: `${dot.x * 100}%`,
-                          top: `${dot.y * 100}%`,
-                          width: `${Math.max(dot.radius * 220, 12)}px`,
-                          height: `${Math.max(dot.radius * 220, 12)}px`,
-                        }}
+              {scannerOpen && (
+                <div className="scanner-body">
+                  <div className="camera-box">
+                    <video ref={videoRef} playsInline muted />
+                    <button className="btn primary" type="button" onClick={captureFromCamera}>
+                      <Camera size={18} />
+                      Capturar
+                    </button>
+                  </div>
+                  {scanner.image && (
+                    <div className="photo-box">
+                      <img ref={imageRef} src={scanner.image} alt="Fichas para calcular" onLoad={scanImage} />
+                      {scanner.dots.map((dot, index) => (
+                        <span
+                          className="detected-dot"
+                          key={`${dot.x}-${dot.y}-${index}`}
+                          style={{
+                            left: `${dot.x * 100}%`,
+                            top: `${dot.y * 100}%`,
+                            width: `${Math.max(dot.radius * 220, 12)}px`,
+                            height: `${Math.max(dot.radius * 220, 12)}px`,
+                          }}
+                        />
+                      ))}
+                    </div>
+                  )}
+                  <div className="scan-controls">
+                    <label className="field">
+                      <span>Sensibilidad</span>
+                      <input
+                        type="range"
+                        min="45"
+                        max="150"
+                        value={scanner.sensitivity}
+                        onChange={(event) => setScanner((current) => ({ ...current, sensitivity: Number(event.target.value) }))}
                       />
-                    ))}
+                    </label>
+                    <div className="scan-result">
+                      <strong>{scanner.analyzed ? scanner.dots.length : "--"}</strong>
+                      <span>puntos</span>
+                    </div>
+                    <button className="btn ghost" type="button" onClick={scanImage}>
+                      <ScanLine size={18} />
+                      Analizar
+                    </button>
+                    <button className="btn primary" type="button" onClick={useScanResult} disabled={!scanner.analyzed}>
+                      Usar conteo
+                    </button>
+                    <label className="fallback-upload">
+                      Subir imagen
+                      <input type="file" accept="image/*" capture="environment" onChange={handleImage} />
+                    </label>
                   </div>
-                )}
-                <div className="scan-controls">
-                  <label className="field">
-                    <span>Sensibilidad</span>
-                    <input
-                      type="range"
-                      min="45"
-                      max="150"
-                      value={scanner.sensitivity}
-                      onChange={(event) => setScanner((current) => ({ ...current, sensitivity: Number(event.target.value) }))}
-                    />
-                  </label>
-                  <div className="scan-result">
-                    <strong>{scanner.analyzed ? scanner.dots.length : "--"}</strong>
-                    <span>puntos</span>
-                  </div>
-                  <button className="btn ghost" type="button" onClick={scanImage}>
-                    <ScanLine size={18} />
-                    Analizar
-                  </button>
-                  <button className="btn primary" type="button" onClick={useScanResult} disabled={!scanner.analyzed}>
-                    Usar conteo
-                  </button>
-                  <label className="fallback-upload">
-                    Subir imagen
-                    <input type="file" accept="image/*" capture="environment" onChange={handleImage} />
-                  </label>
                 </div>
-              </div>
+              )}
             </section>
 
             <div className="bonus-grid">
@@ -540,6 +560,20 @@ function App() {
 
         <aside className="panel">
           <h2>Opciones de mesa</h2>
+          <div className="ambience">
+            <span>La mesa</span>
+            <strong>Domino con bandera, color y conteo rapido</strong>
+          </div>
+          <div className="name-settings">
+            <label className="field team-name-field team-0">
+              <span>Nombre equipo rojo</span>
+              <input type="text" value={state.teams[0]} onChange={(event) => updateTeam(0, event.target.value)} />
+            </label>
+            <label className="field team-name-field team-1">
+              <span>Nombre equipo azul</span>
+              <input type="text" value={state.teams[1]} onChange={(event) => updateTeam(1, event.target.value)} />
+            </label>
+          </div>
           <div className="settings">
             <label className="field">
               <span>Meta</span>
