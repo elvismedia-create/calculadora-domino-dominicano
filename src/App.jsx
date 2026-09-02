@@ -520,10 +520,6 @@ function App() {
 
         <aside className="panel">
           <h2>Opciones de mesa</h2>
-          <div className="ambience">
-            <span>La mesa</span>
-            <strong>Domino con bandera, color y conteo rapido</strong>
-          </div>
           <div className="settings">
             <label className="field">
               <span>Meta</span>

@@ -742,31 +742,6 @@ select:focus {
   margin-top: 14px;
 }
 
-.ambience {
-  display: grid;
-  gap: 4px;
-  margin-bottom: 14px;
-  padding: 13px;
-  border-radius: var(--radius);
-  color: #fff;
-  background:
-    linear-gradient(135deg, rgba(0,45,98,.94), rgba(0,87,184,.88) 48%, rgba(206,17,38,.92)),
-    var(--flag-blue);
-  box-shadow: 0 16px 34px rgba(0,45,98,.18);
-}
-
-.ambience span {
-  font-size: .72rem;
-  font-weight: 900;
-  text-transform: uppercase;
-  opacity: .82;
-}
-
-.ambience strong {
-  font-size: 1rem;
-  line-height: 1.25;
-}
-
 .history {
   margin-top: 18px;
   padding: 18px;
