@@ -361,7 +361,7 @@ function App() {
 
       <section className="grid">
         <div>
-          <section className="panel">
+          <section className="panel new-round">
             <h2>Nueva mano</h2>
             <div className="entry-grid">
               <div className="field">
