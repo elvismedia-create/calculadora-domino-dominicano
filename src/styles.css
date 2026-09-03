@@ -893,7 +893,6 @@ select:focus {
   .form-grid,
   .entry-grid,
   .scanner-body,
-  .history-teams,
   .settings {
     grid-template-columns: 1fr;
   }
@@ -921,6 +920,59 @@ select:focus {
 
   .badge {
     justify-content: flex-start;
+  }
+
+  .history {
+    padding: 10px;
+  }
+
+  .history-teams {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .history-team-head {
+    min-height: 46px;
+    padding: 8px;
+    gap: 6px;
+  }
+
+  .history-team-head strong {
+    font-size: .76rem;
+  }
+
+  .history-team-head span {
+    min-width: 38px;
+    min-height: 30px;
+    font-size: .95rem;
+  }
+
+  .round-list {
+    gap: 6px;
+    padding: 8px;
+  }
+
+  .round {
+    grid-template-columns: 1fr;
+    gap: 3px;
+    min-height: 0;
+    padding: 8px;
+    border-left-width: 4px;
+  }
+
+  .round-num {
+    width: 24px;
+    height: 24px;
+    font-size: .72rem;
+  }
+
+  .round strong,
+  .round small {
+    font-size: .78rem;
+  }
+
+  .round-points {
+    font-size: 1.05rem;
   }
 
   .scanner-head {
