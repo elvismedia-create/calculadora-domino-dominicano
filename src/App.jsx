@@ -537,21 +537,6 @@ function App() {
             </button>
           </div>
 
-          <div className="preview-stack">
-            <div className="round">
-              <DominoTile small blankBottom />
-              <div>
-                <strong>Total de la mano</strong>
-                <small>
-                  Puntos listos para anotar
-                </small>
-              </div>
-              <span className="round-points">{roundTotal}</span>
-            </div>
-            <p className="subtitle compact">
-              Ajusta la meta de la mesa y anota cada mano al equipo correspondiente.
-            </p>
-          </div>
         </aside>
       </section>
 

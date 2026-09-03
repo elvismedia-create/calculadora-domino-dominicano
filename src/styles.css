@@ -851,12 +851,6 @@ select:focus {
   padding: 16px;
 }
 
-.preview-stack {
-  margin-top: 18px;
-  display: grid;
-  gap: 12px;
-}
-
 .toast {
   position: fixed;
   left: 50%;
