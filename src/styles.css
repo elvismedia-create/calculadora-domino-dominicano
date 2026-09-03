@@ -725,12 +725,29 @@ select:focus {
 }
 
 .history-team {
+  appearance: none;
+  width: 100%;
+  padding: 0;
   border: 2px solid var(--team-color);
   border-radius: var(--radius);
   background:
     linear-gradient(180deg, var(--team-color), var(--team-color) 58px, var(--team-soft) 58px, rgba(255,255,255,.96) 100%);
   overflow: hidden;
   box-shadow: 0 16px 34px var(--team-soft);
+  color: inherit;
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+  transition: transform .18s ease, box-shadow .18s ease, outline-color .18s ease;
+}
+
+.history-team:hover {
+  transform: translateY(-1px);
+}
+
+.history-team.is-active {
+  outline: 4px solid var(--team-soft);
+  box-shadow: 0 0 0 3px #fff, 0 18px 38px var(--team-soft);
 }
 
 .history-team-head {

@@ -483,7 +483,13 @@ function App() {
                   .reverse();
 
                 return (
-                  <div className={`history-team team-${team}`} key={team}>
+                  <button
+                    className={`history-team team-${team} ${winner === team ? "is-active" : ""}`}
+                    key={team}
+                    type="button"
+                    aria-pressed={winner === team}
+                    onClick={() => setWinner(team)}
+                  >
                     <div className="history-team-head">
                       <strong>{state.teams[team]}</strong>
                       <span>{totals[team]}</span>
@@ -499,7 +505,7 @@ function App() {
                         ))
                       )}
                     </div>
-                  </div>
+                  </button>
                 );
               })}
             </div>
