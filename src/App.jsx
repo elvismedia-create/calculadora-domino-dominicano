@@ -333,13 +333,6 @@ function App() {
             Marcador rapido para partidas por parejas.
           </p>
         </div>
-        <div className="hero-emblem">
-          <div className="rd-badge">RD</div>
-          <div className="domino-mark">
-            <DominoTile />
-            <DominoTile blankBottom />
-          </div>
-        </div>
       </header>
 
       <section className="scoreboard" aria-label="Marcador">
