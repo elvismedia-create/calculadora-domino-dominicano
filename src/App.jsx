@@ -394,6 +394,17 @@ function App() {
               </button>
             </div>
 
+            <div className="actions">
+              <button className="btn primary" type="button" onClick={addRound}>
+                <Save size={18} />
+                Anotar mano
+              </button>
+              <button className="btn secondary" type="button" onClick={() => setWinner(winner === 0 ? 1 : 0)}>
+                <Shuffle size={18} />
+                Cambiar equipo
+              </button>
+            </div>
+
             <section className="scanner">
               <div className="scanner-head">
                 <div>
@@ -471,17 +482,6 @@ function App() {
                 </div>
               )}
             </section>
-
-            <div className="actions">
-              <button className="btn primary" type="button" onClick={addRound}>
-                <Save size={18} />
-                Anotar mano
-              </button>
-              <button className="btn secondary" type="button" onClick={() => setWinner(winner === 0 ? 1 : 0)}>
-                <Shuffle size={18} />
-                Cambiar equipo
-              </button>
-            </div>
           </section>
 
           <section className="history">
