@@ -769,8 +769,8 @@ select:focus {
 
 .round {
   display: grid;
-  place-items: center;
-  gap: 0;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
   align-items: center;
   min-height: 74px;
   padding: 10px;
@@ -780,29 +780,25 @@ select:focus {
   border-left: 6px solid var(--team-color, var(--line));
 }
 
-.round-num {
-  width: 30px;
-  height: 30px;
+.delete-round {
+  width: 38px;
+  height: 38px;
+  border: 0;
   border-radius: 50%;
-  background: var(--team-color, var(--ink));
-  color: #fff;
   display: grid;
   place-items: center;
-  font-weight: 900;
-  font-size: .8rem;
+  background: var(--team-color);
+  color: #fff;
+  cursor: pointer;
+  box-shadow: 0 8px 18px var(--team-soft);
 }
 
-.round strong {
-  display: block;
-}
-
-.round small {
-  display: block;
-  color: var(--muted);
-  margin-top: 2px;
+.delete-round:active {
+  transform: scale(.96);
 }
 
 .round-points {
+  justify-self: center;
   font-size: clamp(1.55rem, 5vw, 2.35rem);
   font-weight: 950;
   line-height: 1;
@@ -997,10 +993,9 @@ select:focus {
     border-left-width: 4px;
   }
 
-  .round-num {
-    width: 24px;
-    height: 24px;
-    font-size: .72rem;
+  .delete-round {
+    width: 32px;
+    height: 32px;
   }
 
   .round-points {

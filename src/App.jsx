@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { Camera, CameraOff, RotateCcw, Save, ScanLine, Trophy, Undo2 } from "lucide-react";
+import { Camera, CameraOff, RotateCcw, Save, ScanLine, Trash2, Trophy, Undo2 } from "lucide-react";
 import { createRoot } from "react-dom/client";
 import "./styles.css";
 
@@ -237,6 +237,12 @@ function App() {
     setToast("Ultima mano deshecha.");
   }
 
+  function deleteRound(roundIndex) {
+    setState((current) => ({ ...current, rounds: current.rounds.filter((_, index) => index !== roundIndex) }));
+    setWinnerMessage(null);
+    setToast("Anotacion borrada.");
+  }
+
   function resetGame() {
     setState((current) => ({ ...current, teams: [...initialState.teams], rounds: [] }));
     setWinner(0);
@@ -462,21 +468,28 @@ function App() {
           </section>
 
           <section className="history">
-            <h2>Historial</h2>
+            <h2>Puntuaciones</h2>
             <div className="history-teams">
               {[0, 1].map((team) => {
                 const teamRounds = state.rounds
-                  .map((round, index) => ({ ...round, roundNumber: index + 1 }))
+                  .map((round, index) => ({ ...round, roundIndex: index, roundNumber: index + 1 }))
                   .filter((round) => round.team === team)
                   .reverse();
 
                 return (
-                  <button
+                  <div
                     className={`history-team team-${team} ${winner === team ? "is-active" : ""}`}
                     key={team}
-                    type="button"
+                    role="button"
+                    tabIndex={0}
                     aria-pressed={winner === team}
                     onClick={() => setWinner(team)}
+                    onKeyDown={(event) => {
+                      if (event.key === "Enter" || event.key === " ") {
+                        event.preventDefault();
+                        setWinner(team);
+                      }
+                    }}
                   >
                     <div className="history-team-head">
                       <strong>{state.teams[team]}</strong>
@@ -489,11 +502,24 @@ function App() {
                         teamRounds.map((round) => (
                           <div className={`round team-${round.team}`} key={`${round.at}-${round.roundNumber}`}>
                             <span className="round-points">+{round.total}</span>
+                            {winner === team && (
+                              <button
+                                className="delete-round"
+                                type="button"
+                                aria-label={`Borrar +${round.total}`}
+                                onClick={(event) => {
+                                  event.stopPropagation();
+                                  deleteRound(round.roundIndex);
+                                }}
+                              >
+                                <Trash2 size={18} />
+                              </button>
+                            )}
                           </div>
                         ))
                       )}
                     </div>
-                  </button>
+                  </div>
                 );
               })}
             </div>
