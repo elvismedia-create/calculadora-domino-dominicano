@@ -114,7 +114,7 @@ function analyzeDominoImage(image, sensitivity) {
   return dots;
 }
 
-function ScoreCard({ index, name, score, hands, last, target, isActive, isLeader, isWinner, onNameChange }) {
+function ScoreCard({ index, name, score, last, target, isActive, isLeader, isWinner, onNameChange }) {
   return (
     <article className={`score-card team-${index} ${isActive ? "is-active" : ""} ${isLeader ? "is-leader" : ""} ${isWinner ? "is-winner" : ""}`}>
       <span className="winner-ribbon">Gano</span>
@@ -126,7 +126,6 @@ function ScoreCard({ index, name, score, hands, last, target, isActive, isLeader
           aria-label={`Nombre ${name}`}
           onChange={(event) => onNameChange(index, event.target.value)}
         />
-        <span className="badge">{hands} manos</span>
       </div>
       <div className="score">{score}</div>
       <div className="progress" aria-hidden="true">
@@ -157,18 +156,6 @@ function App() {
       state.rounds.reduce(
         (sum, round) => {
           sum[round.team] += round.total;
-          return sum;
-        },
-        [0, 0],
-      ),
-    [state.rounds],
-  );
-
-  const hands = useMemo(
-    () =>
-      state.rounds.reduce(
-        (sum, round) => {
-          sum[round.team] += 1;
           return sum;
         },
         [0, 0],
@@ -344,7 +331,6 @@ function App() {
             index={team}
             name={state.teams[team]}
             score={totals[team]}
-            hands={hands[team]}
             last={lastFor(team)}
             target={state.target}
             isActive={winner === team}

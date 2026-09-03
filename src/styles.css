@@ -250,11 +250,6 @@ h1 {
   color: #fff;
 }
 
-.score-card.is-active .badge {
-  background: rgba(255,255,255,.92);
-  color: var(--team-color);
-}
-
 .score-card.is-leader {
   border-color: rgba(22,120,74,.45);
 }
@@ -264,10 +259,7 @@ h1 {
 }
 
 .team-head {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: 10px;
-  align-items: center;
+  display: block;
 }
 
 .team-name {
@@ -287,21 +279,6 @@ h1 {
 .team-name:focus {
   outline: none;
   border-bottom-color: var(--line);
-}
-
-.badge {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 72px;
-  height: 30px;
-  padding: 0 10px;
-  background: #edf2fb;
-  color: var(--muted);
-  border-radius: 999px;
-  font-size: .76rem;
-  font-weight: 800;
-  text-transform: uppercase;
 }
 
 .score {
@@ -970,13 +947,6 @@ select:focus {
     font-size: 1rem;
   }
 
-  .badge {
-    min-width: 0;
-    height: 25px;
-    padding: 0 7px;
-    font-size: .62rem;
-  }
-
   .score {
     font-size: clamp(3rem, 21vw, 4.3rem);
   }
@@ -989,14 +959,6 @@ select:focus {
 
   .actions {
     grid-template-columns: 1fr;
-  }
-
-  .team-head {
-    grid-template-columns: 1fr;
-  }
-
-  .badge {
-    justify-content: flex-start;
   }
 
   .history {
