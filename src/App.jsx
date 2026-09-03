@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { Camera, CameraOff, RotateCcw, Save, ScanLine, Trash2, Trophy, Undo2 } from "lucide-react";
+import { Camera, CameraOff, Check, RotateCcw, Save, ScanLine, Trash2, Trophy, Undo2, X } from "lucide-react";
 import { createRoot } from "react-dom/client";
 import "./styles.css";
 
@@ -8,6 +8,7 @@ const STORE_KEY = "dominican-domino-calculator-react-v1";
 const initialState = {
   teams: ["Equipo A", "Equipo B"],
   target: 200,
+  keepNames: false,
   rounds: [],
 };
 
@@ -32,6 +33,7 @@ function loadState() {
       ...initialState,
       ...saved,
       teams: Array.isArray(saved.teams) && saved.teams.length >= 2 ? saved.teams.slice(0, 2) : initialState.teams,
+      keepNames: Boolean(saved.keepNames),
       rounds: Array.isArray(saved.rounds) ? saved.rounds : [],
     };
   } catch {
@@ -148,6 +150,7 @@ function App() {
   const [points, setPoints] = useState(0);
   const [toast, setToast] = useState("");
   const [winnerMessage, setWinnerMessage] = useState(null);
+  const [deleteConfirm, setDeleteConfirm] = useState(null);
   const [scanner, setScanner] = useState({ image: "", dots: [], sensitivity: 86, analyzed: false });
   const [scannerOpen, setScannerOpen] = useState(false);
   const imageRef = useRef(null);
@@ -166,13 +169,17 @@ function App() {
     [state.rounds],
   );
 
-  const roundTotal = cleanNumber(points);
-
   const leaderScore = Math.max(...totals);
 
   useEffect(() => {
     localStorage.setItem(STORE_KEY, JSON.stringify(state));
   }, [state]);
+
+  useEffect(() => {
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("/service-worker.js").catch(() => undefined);
+    }
+  }, []);
 
   useEffect(() => {
     if (!toast) return undefined;
@@ -203,16 +210,18 @@ function App() {
     setState((current) => ({ ...current, [key]: Math.max(cleanNumber(value), minimum) }));
   }
 
-  function addRound() {
-    if (!roundTotal) {
+  function addRound(totalOverride) {
+    const total = cleanNumber(totalOverride ?? points);
+
+    if (!total) {
       setToast("Anota puntos primero.");
       return;
     }
 
     const round = {
       team: winner,
-      base: cleanNumber(points),
-      total: roundTotal,
+      base: total,
+      total,
       note: "",
       at: new Date().toISOString(),
     };
@@ -242,14 +251,20 @@ function App() {
 
   function deleteRound(roundIndex) {
     setState((current) => ({ ...current, rounds: current.rounds.filter((_, index) => index !== roundIndex) }));
+    setDeleteConfirm(null);
     setWinnerMessage(null);
     setToast("Anotacion borrada.");
   }
 
   function resetGame() {
-    setState((current) => ({ ...current, teams: [...initialState.teams], rounds: [] }));
+    setState((current) => ({
+      ...current,
+      teams: current.keepNames ? current.teams : [...initialState.teams],
+      rounds: [],
+    }));
     setWinner(0);
     setPoints(0);
+    setDeleteConfirm(null);
     setWinnerMessage(null);
     setToast("Partida nueva lista.");
   }
@@ -320,6 +335,12 @@ function App() {
   function useScanResult() {
     setPoints(scanner.dots.length);
     setToast(`${scanner.dots.length} puntos pasados a la mano.`);
+  }
+
+  function useScanAndScore() {
+    const total = scanner.dots.length;
+    setPoints(0);
+    addRound(total);
   }
 
   return (
@@ -403,7 +424,7 @@ function App() {
             </div>
 
             <div className="actions">
-              <button className="btn primary score-submit" type="button" onClick={addRound}>
+              <button className="btn primary score-submit" type="button" onClick={() => addRound()}>
                 <Save size={18} />
                 Anotar mano
               </button>
@@ -473,12 +494,21 @@ function App() {
                       <strong>{scanner.analyzed ? scanner.dots.length : "--"}</strong>
                       <span>puntos</span>
                     </div>
+                    {scanner.analyzed && (
+                      <p className="scan-note">
+                        Revisa los puntos marcados antes de usar el conteo.
+                      </p>
+                    )}
                     <button className="btn ghost" type="button" onClick={scanImage}>
                       <ScanLine size={18} />
                       Analizar
                     </button>
                     <button className="btn primary" type="button" onClick={useScanResult} disabled={!scanner.analyzed}>
                       Usar conteo
+                    </button>
+                    <button className="btn primary score-submit" type="button" onClick={useScanAndScore} disabled={!scanner.analyzed || !scanner.dots.length}>
+                      <Check size={18} />
+                      Usar y anotar
                     </button>
                     <label className="fallback-upload">
                       Subir imagen
@@ -498,6 +528,7 @@ function App() {
                   .map((round, index) => ({ ...round, roundIndex: index, roundNumber: index + 1 }))
                   .filter((round) => round.team === team)
                   .reverse();
+                const latestRoundIndex = teamRounds[0]?.roundIndex;
 
                 return (
                   <div
@@ -515,7 +546,10 @@ function App() {
                     }}
                   >
                     <div className="history-team-head">
-                      <strong>{state.teams[team]}</strong>
+                      <div>
+                        <strong>{state.teams[team]}</strong>
+                        <small>{teamRounds.length ? `${teamRounds.length} anotaciones` : "Sin anotaciones"}</small>
+                      </div>
                       <span>{totals[team]}</span>
                     </div>
                     <div className="round-list">
@@ -523,7 +557,7 @@ function App() {
                         <div className="empty">Sin manos</div>
                       ) : (
                         teamRounds.map((round) => (
-                          <div className={`round team-${round.team}`} key={`${round.at}-${round.roundNumber}`}>
+                          <div className={`round team-${round.team} ${round.roundIndex === latestRoundIndex ? "is-latest" : ""}`} key={`${round.at}-${round.roundNumber}`}>
                             <span className="round-points">+{round.total}</span>
                             {winner === team && (
                               <button
@@ -532,7 +566,11 @@ function App() {
                                 aria-label={`Borrar +${round.total}`}
                                 onClick={(event) => {
                                   event.stopPropagation();
-                                  deleteRound(round.roundIndex);
+                                  setDeleteConfirm({
+                                    roundIndex: round.roundIndex,
+                                    total: round.total,
+                                    teamName: state.teams[team],
+                                  });
                                 }}
                               >
                                 <Trash2 size={18} />
@@ -568,9 +606,37 @@ function App() {
               Nueva partida
             </button>
           </div>
+          <label className="toggle-row">
+            <input
+              type="checkbox"
+              checked={state.keepNames}
+              onChange={(event) => setState((current) => ({ ...current, keepNames: event.target.checked }))}
+            />
+            <span>Mantener nombres al empezar otra partida</span>
+          </label>
 
         </aside>
       </section>
+
+      {deleteConfirm && (
+        <div className="modal-backdrop" role="presentation">
+          <section className="modal confirm-modal" role="dialog" aria-modal="true" aria-labelledby="delete-title">
+            <Trash2 size={30} />
+            <h3 id="delete-title">Borrar +{deleteConfirm.total}</h3>
+            <p>Esta anotacion de {deleteConfirm.teamName} se quitara del marcador.</p>
+            <div className="actions">
+              <button className="btn danger" type="button" onClick={() => deleteRound(deleteConfirm.roundIndex)}>
+                <Trash2 size={18} />
+                Borrar
+              </button>
+              <button className="btn secondary" type="button" onClick={() => setDeleteConfirm(null)}>
+                <X size={18} />
+                Cancelar
+              </button>
+            </div>
+          </section>
+        </div>
+      )}
 
       {winnerMessage && (
         <div className="modal-backdrop" role="presentation">

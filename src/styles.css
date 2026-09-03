@@ -462,6 +462,12 @@ select:focus {
   color: #fff;
 }
 
+.danger {
+  background: linear-gradient(90deg, var(--flag-red), #a90f20);
+  color: #fff;
+  box-shadow: 0 12px 24px rgba(206,17,38,.24);
+}
+
 .ghost {
   background: transparent;
   border: 1px solid rgba(0,45,98,.22);
@@ -640,6 +646,17 @@ select:focus {
   text-transform: uppercase;
 }
 
+.scan-note {
+  margin: 0;
+  padding: 10px;
+  border-radius: var(--radius);
+  background: rgba(22,120,74,.1);
+  color: var(--green);
+  font-size: .8rem;
+  font-weight: 800;
+  line-height: 1.35;
+}
+
 .fallback-upload {
   min-height: 38px;
   display: grid;
@@ -717,11 +734,21 @@ select:focus {
 }
 
 .history-team-head strong {
+  display: block;
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
   font-size: 1rem;
+  text-transform: uppercase;
+}
+
+.history-team-head small {
+  display: block;
+  margin-top: 3px;
+  color: rgba(255,255,255,.82);
+  font-size: .68rem;
+  font-weight: 850;
   text-transform: uppercase;
 }
 
@@ -758,6 +785,22 @@ select:focus {
   border-left: 6px solid var(--team-color, var(--line));
 }
 
+.round.is-latest {
+  background: linear-gradient(90deg, var(--team-soft), #fff 34%, rgba(244,196,48,.18));
+  border-color: var(--team-color);
+}
+
+.round.is-latest::before {
+  content: "Ultima";
+  align-self: start;
+  justify-self: start;
+  grid-column: 1 / -1;
+  color: var(--team-color);
+  font-size: .64rem;
+  font-weight: 950;
+  text-transform: uppercase;
+}
+
 .delete-round {
   width: 38px;
   height: 38px;
@@ -792,6 +835,27 @@ select:focus {
   border: 1px dashed var(--line);
   border-radius: var(--radius);
   padding: 16px;
+}
+
+.toggle-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 14px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: #fff;
+  color: var(--muted);
+  font-size: .85rem;
+  font-weight: 800;
+}
+
+.toggle-row input {
+  width: 20px;
+  height: 20px;
+  accent-color: var(--green);
+  flex: 0 0 auto;
 }
 
 .toast {

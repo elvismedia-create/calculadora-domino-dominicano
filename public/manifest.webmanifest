@@ -1,0 +1,19 @@
+{
+  "name": "Calculadora Domino Dominicano",
+  "short_name": "Domino RD",
+  "description": "Calculadora de domino dominicano para anotar partidas por bandos.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#f7f9ff",
+  "theme_color": "#002d62",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/assets/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
