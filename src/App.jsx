@@ -251,7 +251,9 @@ function App() {
   }
 
   function resetGame() {
-    setState((current) => ({ ...current, rounds: [] }));
+    setState((current) => ({ ...current, teams: [...initialState.teams], rounds: [] }));
+    setWinner(0);
+    setPoints(0);
     setWinnerMessage(null);
     setToast("Partida nueva lista.");
   }
