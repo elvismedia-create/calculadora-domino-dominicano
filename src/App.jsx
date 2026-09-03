@@ -339,6 +339,10 @@ function App() {
         </div>
       </header>
 
+      <section className="hero-banner" aria-label="Domino dominicano">
+        <img src="/assets/domino-dominicano-banner.png" alt="Fichas de domino con colores dominicanos" />
+      </section>
+
       <section className="scoreboard" aria-label="Marcador">
         {[0, 1].map((team) => (
           <ScoreCard

@@ -94,6 +94,23 @@ h1 {
   font-size: .92rem;
 }
 
+.hero-banner {
+  margin: 0 0 18px;
+  border: 3px solid rgba(255,255,255,.85);
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: var(--shadow);
+  background: #fff;
+}
+
+.hero-banner img {
+  display: block;
+  width: 100%;
+  height: clamp(130px, 24vw, 230px);
+  object-fit: cover;
+  object-position: left center;
+}
+
 .domino-mark {
   display: grid;
   grid-template-columns: repeat(2, 54px);
@@ -916,6 +933,10 @@ select:focus {
   .topbar,
   .grid {
     grid-template-columns: 1fr;
+  }
+
+  .hero-banner img {
+    height: 128px;
   }
 
   .domino-mark {
