@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { Camera, CameraOff, Flag, Music2, RotateCcw, Save, ScanLine, Shuffle, Trophy, Undo2 } from "lucide-react";
+import { Camera, CameraOff, RotateCcw, Save, ScanLine, Shuffle, Trophy, Undo2 } from "lucide-react";
 import { createRoot } from "react-dom/client";
 import "./styles.css";
 
@@ -327,20 +327,10 @@ function App() {
     <main className="app">
       <header className="topbar">
         <div>
-          <div className="brand-strip" aria-label="Estilo dominicano">
-            <span><Flag size={16} /> Republica Dominicana</span>
-            <span><Music2 size={16} /> Mesa prendia</span>
-          </div>
           <h1>Calculadora Domino Dominicano</h1>
           <p className="subtitle">
-            Marcador rapido para partidas por parejas: suma puntos, capicua, trancado y guarda la mesa aunque cierres el navegador.
+            Marcador rapido para partidas por parejas.
           </p>
-          <div className="dominican-tags" aria-label="Detalles de juego">
-            <span>Tranque</span>
-            <span>200 puntos</span>
-            <span>Domino RD</span>
-            <span>Mesa caliente</span>
-          </div>
         </div>
         <div className="hero-emblem">
           <div className="rd-badge">RD</div>
@@ -398,11 +388,9 @@ function App() {
             </div>
 
             <div className="quick" aria-label="Puntos rapidos">
-              {[10, 20, 30, 40].map((value) => (
-                <button key={value} type="button" onClick={() => setPoints(cleanNumber(points) + value)}>
-                  +{value}
-                </button>
-              ))}
+              <button type="button" onClick={() => setPoints(cleanNumber(points) + 30)}>
+                +30
+              </button>
             </div>
 
             <section className="scanner">

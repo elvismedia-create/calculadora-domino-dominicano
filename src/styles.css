@@ -81,57 +81,6 @@ h1 {
   text-shadow: 3px 3px 0 rgba(206,17,38,.14);
 }
 
-.brand-strip,
-.dominican-tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  align-items: center;
-}
-
-.brand-strip {
-  margin-bottom: 12px;
-}
-
-.brand-strip span,
-.dominican-tags span {
-  min-height: 30px;
-  border-radius: 999px;
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  padding: 0 11px;
-  font-size: .78rem;
-  font-weight: 900;
-  text-transform: uppercase;
-  letter-spacing: 0;
-}
-
-.brand-strip span:first-child {
-  background: var(--flag-blue);
-  color: #fff;
-}
-
-.brand-strip span:last-child {
-  background: var(--flag-red);
-  color: #fff;
-}
-
-.dominican-tags {
-  margin-top: 14px;
-}
-
-.dominican-tags span {
-  border: 1px solid rgba(0,45,98,.16);
-  background: rgba(255,255,255,.82);
-  color: var(--flag-blue);
-  box-shadow: 0 8px 18px rgba(0,45,98,.08);
-}
-
-.dominican-tags span:nth-child(2n) {
-  color: var(--flag-red);
-}
-
 .subtitle {
   max-width: 680px;
   margin: 12px 0 0;
@@ -549,19 +498,20 @@ select:focus {
 
 .quick {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: 1fr;
   gap: 8px;
   margin-top: 14px;
 }
 
 .quick button {
-  min-height: 40px;
+  min-height: 58px;
   border-radius: var(--radius);
-  background: #fff;
-  border: 1px solid var(--line);
-  font-weight: 900;
-  color: var(--flag-blue);
-  box-shadow: inset 0 -3px 0 rgba(206,17,38,.16);
+  background: linear-gradient(90deg, var(--flag-blue), var(--flag-red));
+  border: 0;
+  font-size: 1.25rem;
+  font-weight: 950;
+  color: #fff;
+  box-shadow: 0 14px 28px rgba(0,45,98,.16);
 }
 
 .scanner {
@@ -919,28 +869,12 @@ select:focus {
     grid-template-columns: 1fr;
   }
 
-  .quick {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
   .team-head {
     grid-template-columns: 1fr;
   }
 
   .badge {
     justify-content: flex-start;
-  }
-
-  .brand-strip,
-  .dominican-tags {
-    gap: 6px;
-  }
-
-  .brand-strip span,
-  .dominican-tags span {
-    min-height: 28px;
-    font-size: .7rem;
-    padding: 0 9px;
   }
 
   .scanner-head {
