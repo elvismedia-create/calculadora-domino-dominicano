@@ -28,21 +28,15 @@ function cleanNumber(value) {
 function loadState() {
   try {
     const saved = JSON.parse(localStorage.getItem(STORE_KEY) || "{}");
-    return { ...initialState, ...saved };
+    return {
+      ...initialState,
+      ...saved,
+      teams: Array.isArray(saved.teams) && saved.teams.length >= 2 ? saved.teams.slice(0, 2) : initialState.teams,
+      rounds: Array.isArray(saved.rounds) ? saved.rounds : [],
+    };
   } catch {
     return initialState;
   }
-}
-
-function DominoTile({ small = false, blankBottom = false }) {
-  return (
-    <div className={`tile ${small ? "tile--small" : ""}`} aria-hidden="true">
-      <div className="half">
-        <span className="pip" />
-      </div>
-      <div className="half">{!blankBottom && <span className="pip" />}</div>
-    </div>
-  );
 }
 
 function analyzeDominoImage(image, sensitivity) {
@@ -340,7 +334,7 @@ function App() {
       </header>
 
       <section className="hero-banner" aria-label="Domino dominicano">
-        <img src="/assets/domino-dominicano-banner.png" alt="Fichas de domino con colores dominicanos" />
+        <img src="/assets/domino-dominicano-banner.jpg" alt="Fichas de domino con colores dominicanos" />
       </section>
 
       <section className="scoreboard" aria-label="Marcador">
@@ -389,6 +383,7 @@ function App() {
                   min="0"
                   max="168"
                   step="1"
+                  inputMode="numeric"
                   value={points}
                   onFocus={() => {
                     if (cleanNumber(points) === 0) setPoints("");
@@ -425,13 +420,15 @@ function App() {
                     <Camera size={18} />
                     Camara
                   </button>
-                  <button className="capture-btn capture-btn--light" type="button" onClick={() => {
-                    stopCamera();
-                    setScannerOpen(false);
-                  }}>
-                    <CameraOff size={18} />
-                    Cerrar
-                  </button>
+                  {scannerOpen && (
+                    <button className="capture-btn capture-btn--light" type="button" onClick={() => {
+                      stopCamera();
+                      setScannerOpen(false);
+                    }}>
+                      <CameraOff size={18} />
+                      Cerrar
+                    </button>
+                  )}
                 </div>
               </div>
 

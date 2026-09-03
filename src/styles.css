@@ -50,7 +50,7 @@ button {
 .app {
   width: min(1180px, calc(100% - 28px));
   margin: 0 auto;
-  padding: 24px 0 32px;
+  padding: 18px 0 32px;
 }
 
 .topbar {
@@ -58,7 +58,7 @@ button {
   grid-template-columns: 1fr auto;
   gap: 18px;
   align-items: end;
-  padding: 20px 0 24px;
+  padding: 16px 0 18px;
   position: relative;
 }
 
@@ -73,8 +73,8 @@ button {
 
 h1 {
   margin: 0;
-  font-size: clamp(2rem, 6vw, 4.7rem);
-  line-height: .9;
+  font-size: clamp(2rem, 5.2vw, 4rem);
+  line-height: .95;
   letter-spacing: 0;
   text-transform: uppercase;
   color: var(--flag-blue);
@@ -106,60 +106,9 @@ h1 {
 .hero-banner img {
   display: block;
   width: 100%;
-  height: clamp(130px, 24vw, 230px);
+  height: clamp(120px, 21vw, 210px);
   object-fit: cover;
   object-position: left center;
-}
-
-.domino-mark {
-  display: grid;
-  grid-template-columns: repeat(2, 54px);
-  gap: 8px;
-  align-items: center;
-}
-
-.tile {
-  width: 54px;
-  height: 104px;
-  border: 3px solid var(--ink);
-  border-radius: 7px;
-  background: #fff;
-  box-shadow: 0 8px 0 rgba(0,45,98,.18);
-  display: grid;
-  grid-template-rows: 1fr 1fr;
-  overflow: hidden;
-}
-
-.tile--small {
-  width: 32px;
-  height: 58px;
-  border-width: 2px;
-  border-radius: 5px;
-  box-shadow: none;
-}
-
-.half {
-  position: relative;
-  display: grid;
-  place-items: center;
-}
-
-.half + .half {
-  border-top: 2px solid var(--ink);
-}
-
-.pip {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--ink);
-  box-shadow: 14px 0 0 var(--ink), -14px 0 0 var(--ink);
-}
-
-.tile--small .pip {
-  width: 5px;
-  height: 5px;
-  box-shadow: 8px 0 0 var(--ink), -8px 0 0 var(--ink);
 }
 
 .grid {
@@ -204,7 +153,7 @@ h1 {
 
 .score-card {
   padding: 18px;
-  min-height: 230px;
+  min-height: 212px;
   position: relative;
   overflow: hidden;
   border: 2px solid var(--team-color);
@@ -264,7 +213,7 @@ h1 {
 }
 
 .score-card.is-active .team-name {
-  color: #fff;
+  color: var(--team-color);
 }
 
 .score-card.is-leader {
@@ -291,6 +240,9 @@ h1 {
   padding: 5px 0;
   min-width: 0;
   caret-color: var(--team-color);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .team-name:focus {
@@ -299,8 +251,8 @@ h1 {
 }
 
 .score {
-  margin: 14px 0 10px;
-  font-size: clamp(4.3rem, 14vw, 8.5rem);
+  margin: 10px 0;
+  font-size: clamp(4rem, 13vw, 7.8rem);
   font-weight: 950;
   line-height: .82;
   letter-spacing: 0;
@@ -589,6 +541,10 @@ select:focus {
   background: #fff;
   color: var(--flag-blue);
   border: 1px solid var(--line);
+}
+
+.camera-actions .capture-btn:only-child {
+  grid-column: 1 / -1;
 }
 
 .capture-btn input {
@@ -936,22 +892,7 @@ select:focus {
   }
 
   .hero-banner img {
-    height: 128px;
-  }
-
-  .domino-mark {
-    grid-template-columns: repeat(2, 44px);
-    justify-content: start;
-  }
-
-  .tile {
-    width: 44px;
-    height: 84px;
-  }
-
-  .tile--small {
-    width: 32px;
-    height: 58px;
+    height: 120px;
   }
 
   .form-grid,
@@ -965,7 +906,28 @@ select:focus {
 @media (max-width: 460px) {
   .app {
     width: min(100% - 18px, 1180px);
-    padding-top: 12px;
+    padding-top: 10px;
+  }
+
+  .topbar {
+    padding: 12px 0;
+  }
+
+  h1 {
+    font-size: clamp(1.55rem, 8vw, 2.25rem);
+  }
+
+  .subtitle {
+    margin-top: 8px;
+    font-size: .86rem;
+  }
+
+  .hero-banner {
+    margin-bottom: 10px;
+  }
+
+  .hero-banner img {
+    height: 92px;
   }
 
   .panel,
@@ -978,7 +940,7 @@ select:focus {
   }
 
   .score-card {
-    min-height: 168px;
+    min-height: 150px;
     padding: 10px;
     border-top-width: 9px;
   }
@@ -1006,7 +968,7 @@ select:focus {
   }
 
   .score {
-    font-size: clamp(3rem, 21vw, 4.3rem);
+    font-size: clamp(2.8rem, 18vw, 4rem);
   }
 
   .meta-row {
@@ -1050,7 +1012,7 @@ select:focus {
   }
 
   .round {
-    min-height: 58px;
+    min-height: 54px;
     padding: 8px 6px;
     border-left-width: 4px;
   }
