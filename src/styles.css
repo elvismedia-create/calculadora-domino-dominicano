@@ -848,7 +848,43 @@ select:focus {
   z-index: 2;
 }
 
+.confetti {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.confetti span {
+  position: absolute;
+  top: -24px;
+  border-radius: 3px;
+  opacity: .95;
+  animation: confetti-fall 3s linear infinite;
+}
+
+.confetti span:nth-child(3n) {
+  border-radius: 50%;
+}
+
+.confetti span:nth-child(4n) {
+  transform-origin: center;
+}
+
+@keyframes confetti-fall {
+  0% {
+    transform: translate3d(0, -20px, 0) rotate(0deg);
+  }
+  50% {
+    transform: translate3d(22px, 50vh, 0) rotate(190deg);
+  }
+  100% {
+    transform: translate3d(-18px, 105vh, 0) rotate(380deg);
+  }
+}
+
 .modal {
+  position: relative;
   width: min(420px, 100%);
   border-radius: var(--radius);
   padding: 22px;

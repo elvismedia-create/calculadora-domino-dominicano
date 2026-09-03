@@ -11,6 +11,15 @@ const initialState = {
   rounds: [],
 };
 
+const confettiPieces = Array.from({ length: 42 }, (_, index) => ({
+  id: index,
+  left: `${(index * 19) % 100}%`,
+  delay: `${(index % 9) * 0.13}s`,
+  duration: `${2.6 + (index % 6) * 0.24}s`,
+  color: ["#d7142f", "#005bbb", "#ffffff", "#ffc400"][index % 4],
+  size: `${8 + (index % 4) * 3}px`,
+}));
+
 function cleanNumber(value) {
   const number = Number(value);
   return Number.isFinite(number) && number > 0 ? Math.round(number) : 0;
@@ -551,6 +560,21 @@ function App() {
 
       {winnerMessage && (
         <div className="modal-backdrop" role="presentation">
+          <div className="confetti" aria-hidden="true">
+            {confettiPieces.map((piece) => (
+              <span
+                key={piece.id}
+                style={{
+                  left: piece.left,
+                  animationDelay: piece.delay,
+                  animationDuration: piece.duration,
+                  background: piece.color,
+                  width: piece.size,
+                  height: piece.size,
+                }}
+              />
+            ))}
+          </div>
           <section className="modal" role="dialog" aria-modal="true" aria-labelledby="winner-title">
             <Trophy size={34} />
             <h3 id="winner-title">{winnerMessage.title}</h3>
