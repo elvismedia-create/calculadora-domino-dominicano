@@ -215,7 +215,9 @@ h1 {
   min-height: 230px;
   position: relative;
   overflow: hidden;
-  border-top: 8px solid var(--team-color);
+  border: 2px solid var(--team-color);
+  border-top: 12px solid var(--team-color);
+  background: linear-gradient(180deg, var(--team-soft), rgba(255,255,255,.96) 42%);
   transition: border-color .18s ease, box-shadow .18s ease, transform .18s ease;
 }
 
@@ -244,10 +246,38 @@ h1 {
 }
 
 .score-card.is-active {
-  background: linear-gradient(180deg, var(--team-soft), rgba(255,255,255,.9) 44%);
+  background: linear-gradient(180deg, var(--team-color), var(--team-color) 56px, var(--team-soft) 56px, rgba(255,255,255,.96) 100%);
   border-color: var(--team-color);
   box-shadow: 0 20px 48px var(--team-soft), var(--shadow);
   transform: translateY(-2px);
+}
+
+.side-label {
+  display: inline-flex;
+  min-height: 30px;
+  align-items: center;
+  padding: 0 10px;
+  margin-bottom: 8px;
+  border-radius: var(--radius);
+  background: var(--team-color);
+  color: #fff;
+  font-size: .74rem;
+  font-weight: 950;
+  text-transform: uppercase;
+}
+
+.score-card.is-active .side-label {
+  background: #fff;
+  color: var(--team-color);
+}
+
+.score-card.is-active .team-name {
+  color: #fff;
+}
+
+.score-card.is-active .badge {
+  background: rgba(255,255,255,.92);
+  color: var(--team-color);
 }
 
 .score-card.is-leader {
@@ -883,8 +913,7 @@ select:focus {
 
 @media (max-width: 840px) {
   .topbar,
-  .grid,
-  .scoreboard {
+  .grid {
     grid-template-columns: 1fr;
   }
 
@@ -923,9 +952,57 @@ select:focus {
   }
 
   .panel,
-  .score-card,
   .history {
     padding: 14px;
+  }
+
+  .scoreboard {
+    gap: 8px;
+  }
+
+  .score-card {
+    min-height: 168px;
+    padding: 10px;
+    border-top-width: 9px;
+  }
+
+  .score-card::after {
+    width: 96px;
+    height: 96px;
+    border-width: 12px;
+    right: -30px;
+    bottom: -34px;
+  }
+
+  .score-card.is-active {
+    background: linear-gradient(180deg, var(--team-color), var(--team-color) 48px, var(--team-soft) 48px, rgba(255,255,255,.96) 100%);
+  }
+
+  .side-label {
+    min-height: 25px;
+    padding: 0 7px;
+    font-size: .62rem;
+  }
+
+  .team-name {
+    font-size: 1rem;
+  }
+
+  .badge {
+    min-width: 0;
+    height: 25px;
+    padding: 0 7px;
+    font-size: .62rem;
+  }
+
+  .score {
+    font-size: clamp(3rem, 21vw, 4.3rem);
+  }
+
+  .meta-row {
+    flex-direction: column;
+    gap: 3px;
+    font-size: .72rem;
   }
 
   .actions {

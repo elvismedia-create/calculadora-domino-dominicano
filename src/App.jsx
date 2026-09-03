@@ -118,6 +118,7 @@ function ScoreCard({ index, name, score, hands, last, target, isActive, isLeader
   return (
     <article className={`score-card team-${index} ${isActive ? "is-active" : ""} ${isLeader ? "is-leader" : ""} ${isWinner ? "is-winner" : ""}`}>
       <span className="winner-ribbon">Gano</span>
+      <span className="side-label">Bando {index === 0 ? "rojo" : "azul"}</span>
       <div className="team-head">
         <input
           className="team-name"
