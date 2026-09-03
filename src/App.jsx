@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { Camera, CameraOff, RotateCcw, Save, ScanLine, Shuffle, Trophy, Undo2 } from "lucide-react";
+import { Camera, CameraOff, RotateCcw, Save, ScanLine, Trophy, Undo2 } from "lucide-react";
 import { createRoot } from "react-dom/client";
 import "./styles.css";
 
@@ -391,10 +391,6 @@ function App() {
               <button className="btn primary" type="button" onClick={addRound}>
                 <Save size={18} />
                 Anotar mano
-              </button>
-              <button className="btn secondary" type="button" onClick={() => setWinner(winner === 0 ? 1 : 0)}>
-                <Shuffle size={18} />
-                Cambiar equipo
               </button>
             </div>
 
