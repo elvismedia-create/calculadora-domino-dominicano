@@ -380,7 +380,20 @@ function App() {
               </div>
               <label className="field">
                 <span>Puntos contados</span>
-                <input type="number" min="0" max="168" step="1" value={points} onChange={(event) => setPoints(event.target.value)} />
+                <input
+                  type="number"
+                  min="0"
+                  max="168"
+                  step="1"
+                  value={points}
+                  onFocus={() => {
+                    if (cleanNumber(points) === 0) setPoints("");
+                  }}
+                  onBlur={() => {
+                    if (points === "") setPoints(0);
+                  }}
+                  onChange={(event) => setPoints(event.target.value)}
+                />
               </label>
             </div>
 
