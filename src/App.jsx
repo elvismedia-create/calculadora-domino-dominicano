@@ -485,23 +485,38 @@ function App() {
 
           <section className="history">
             <h2>Historial</h2>
-            <div className="round-list">
-              {!state.rounds.length ? (
-                <div className="empty">Todavia no hay manos anotadas.</div>
-              ) : (
-                [...state.rounds].reverse().map((round, index) => (
-                  <div className={`round team-${round.team}`} key={`${round.at}-${index}`}>
-                    <span className="round-num">{state.rounds.length - index}</span>
-                    <div>
-                      <strong>{state.teams[round.team]}</strong>
-                      <small>
-                        {round.base ? `${round.base} contados` : "sin puntos contados"}
-                      </small>
+            <div className="history-teams">
+              {[0, 1].map((team) => {
+                const teamRounds = state.rounds
+                  .map((round, index) => ({ ...round, roundNumber: index + 1 }))
+                  .filter((round) => round.team === team)
+                  .reverse();
+
+                return (
+                  <div className={`history-team team-${team}`} key={team}>
+                    <div className="history-team-head">
+                      <strong>{state.teams[team]}</strong>
+                      <span>{totals[team]}</span>
                     </div>
-                    <span className="round-points">+{round.total}</span>
+                    <div className="round-list">
+                      {!teamRounds.length ? (
+                        <div className="empty">Sin manos</div>
+                      ) : (
+                        teamRounds.map((round) => (
+                          <div className={`round team-${round.team}`} key={`${round.at}-${round.roundNumber}`}>
+                            <span className="round-num">{round.roundNumber}</span>
+                            <div>
+                              <strong>Mano {round.roundNumber}</strong>
+                              <small>{round.base ? `${round.base} contados` : "sin puntos contados"}</small>
+                            </div>
+                            <span className="round-points">+{round.total}</span>
+                          </div>
+                        ))
+                      )}
+                    </div>
                   </div>
-                ))
-              )}
+                );
+              })}
             </div>
           </section>
         </div>
