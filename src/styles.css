@@ -800,11 +800,11 @@ select:focus {
 
 .round {
   display: grid;
-  grid-template-columns: auto 1fr auto;
-  gap: 10px;
+  place-items: center;
+  gap: 0;
   align-items: center;
-  min-height: 48px;
-  padding: 8px 10px;
+  min-height: 74px;
+  padding: 10px;
   background: linear-gradient(90deg, var(--team-soft), #fff 46%);
   border: 1px solid var(--team-border);
   border-radius: var(--radius);
@@ -834,8 +834,9 @@ select:focus {
 }
 
 .round-points {
-  font-size: 1.2rem;
+  font-size: clamp(1.55rem, 5vw, 2.35rem);
   font-weight: 950;
+  line-height: 1;
   color: var(--team-color, var(--green));
 }
 
@@ -1048,10 +1049,8 @@ select:focus {
   }
 
   .round {
-    grid-template-columns: 1fr;
-    gap: 3px;
-    min-height: 0;
-    padding: 8px;
+    min-height: 58px;
+    padding: 8px 6px;
     border-left-width: 4px;
   }
 
@@ -1061,13 +1060,8 @@ select:focus {
     font-size: .72rem;
   }
 
-  .round strong,
-  .round small {
-    font-size: .78rem;
-  }
-
   .round-points {
-    font-size: 1.05rem;
+    font-size: clamp(1.25rem, 8vw, 1.8rem);
   }
 
   .scanner-head {

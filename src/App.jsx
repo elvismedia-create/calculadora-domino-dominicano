@@ -505,11 +505,6 @@ function App() {
                       ) : (
                         teamRounds.map((round) => (
                           <div className={`round team-${round.team}`} key={`${round.at}-${round.roundNumber}`}>
-                            <span className="round-num">{round.roundNumber}</span>
-                            <div>
-                              <strong>Mano {round.roundNumber}</strong>
-                              <small>{round.base ? `${round.base} contados` : "sin puntos contados"}</small>
-                            </div>
                             <span className="round-points">+{round.total}</span>
                           </div>
                         ))
