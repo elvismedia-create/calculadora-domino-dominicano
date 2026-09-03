@@ -483,6 +483,11 @@ select:focus {
   box-shadow: 0 12px 24px rgba(201,25,34,.24);
 }
 
+.score-submit {
+  background: linear-gradient(90deg, var(--green), var(--palm));
+  box-shadow: 0 12px 24px rgba(22,120,74,.26);
+}
+
 .secondary {
   background: var(--flag-blue);
   color: #fff;

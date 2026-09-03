@@ -391,7 +391,7 @@ function App() {
             </div>
 
             <div className="actions">
-              <button className="btn primary" type="button" onClick={addRound}>
+              <button className="btn primary score-submit" type="button" onClick={addRound}>
                 <Save size={18} />
                 Anotar mano
               </button>
