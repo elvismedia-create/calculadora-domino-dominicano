@@ -71,20 +71,38 @@ function analyzeDominoImage(image, sensitivity) {
   ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
 
   const { data, width, height } = ctx.getImageData(0, 0, canvas.width, canvas.height);
-  const dark = new Uint8Array(width * height);
+  const pipMask = new Uint8Array(width * height);
   const seen = new Uint8Array(width * height);
+  const lightMask = new Uint8Array(width * height);
   const dots = [];
   let rawDotLikeShapes = 0;
 
-  function lumaAt(x, y) {
+  function pixelAt(x, y) {
     const offset = (y * width + x) * 4;
-    return data[offset] * 0.299 + data[offset + 1] * 0.587 + data[offset + 2] * 0.114;
+    const r = data[offset];
+    const g = data[offset + 1];
+    const b = data[offset + 2];
+    const alpha = data[offset + 3];
+    const luma = r * 0.299 + g * 0.587 + b * 0.114;
+    const saturation = Math.max(r, g, b) - Math.min(r, g, b);
+    return { r, g, b, alpha, luma, saturation };
   }
 
-  function hasDominoSurfaceAround(minX, minY, maxX, maxY) {
+  function isPipPixel(pixel) {
+    const blackPip = pixel.luma < sensitivity;
+    const redPip = pixel.r > 105 && pixel.g < 95 && pixel.b < 105 && pixel.saturation > 45;
+    const bluePip = pixel.b > 85 && pixel.r < 115 && pixel.g < 140 && pixel.saturation > 38;
+    return pixel.alpha > 80 && (blackPip || redPip || bluePip);
+  }
+
+  function isLightTilePixel(pixel) {
+    return pixel.alpha > 80 && pixel.luma > 150 && pixel.saturation < 86;
+  }
+
+  function hasTileSurfaceAround(minX, minY, maxX, maxY) {
     const boxW = maxX - minX + 1;
     const boxH = maxY - minY + 1;
-    const pad = Math.max(8, Math.round(Math.max(boxW, boxH) * 2.8));
+    const pad = Math.max(10, Math.round(Math.max(boxW, boxH) * 3.2));
     const left = Math.max(0, minX - pad);
     const right = Math.min(width - 1, maxX + pad);
     const top = Math.max(0, minY - pad);
@@ -98,26 +116,69 @@ function analyzeDominoImage(image, sensitivity) {
       for (let x = left; x <= right; x += step) {
         const insidePip = x >= minX && x <= maxX && y >= minY && y <= maxY;
         if (insidePip) continue;
-        const luma = lumaAt(x, y);
         samples += 1;
-        if (luma > 145) lightSamples += 1;
-        if (luma < 72) veryDarkSamples += 1;
+        if (lightMask[y * width + x]) lightSamples += 1;
+        if (pixelAt(x, y).luma < 72) veryDarkSamples += 1;
       }
     }
 
     if (!samples) return false;
-    return lightSamples / samples > 0.48 && veryDarkSamples / samples < 0.28;
+    return lightSamples / samples > 0.38 && veryDarkSamples / samples < 0.34;
+  }
+
+  function hasDominoLineNearby(centerX, centerY, radius) {
+    const search = Math.max(16, Math.round(radius * 6));
+    const left = Math.max(0, centerX - search);
+    const right = Math.min(width - 1, centerX + search);
+    const top = Math.max(0, centerY - search);
+    const bottom = Math.min(height - 1, centerY + search);
+    let horizontalHits = 0;
+    let verticalHits = 0;
+
+    for (let y = top; y <= bottom; y += 2) {
+      let run = 0;
+      for (let x = left; x <= right; x += 1) {
+        const pixel = pixelAt(x, y);
+        if (pixel.luma < 86 && pixel.saturation < 92) {
+          run += 1;
+          horizontalHits = Math.max(horizontalHits, run);
+        } else {
+          run = 0;
+        }
+      }
+    }
+
+    for (let x = left; x <= right; x += 2) {
+      let run = 0;
+      for (let y = top; y <= bottom; y += 1) {
+        const pixel = pixelAt(x, y);
+        if (pixel.luma < 86 && pixel.saturation < 92) {
+          run += 1;
+          verticalHits = Math.max(verticalHits, run);
+        } else {
+          run = 0;
+        }
+      }
+    }
+
+    return horizontalHits >= radius * 2.3 || verticalHits >= radius * 2.3;
   }
 
   for (let index = 0; index < width * height; index += 1) {
-    const offset = index * 4;
-    const alpha = data[offset + 3];
-    const luma = data[offset] * 0.299 + data[offset + 1] * 0.587 + data[offset + 2] * 0.114;
-    dark[index] = alpha > 80 && luma < sensitivity ? 1 : 0;
+    const x = index % width;
+    const y = Math.floor(index / width);
+    const pixel = pixelAt(x, y);
+    pipMask[index] = isPipPixel(pixel) ? 1 : 0;
+    lightMask[index] = isLightTilePixel(pixel) ? 1 : 0;
   }
 
-  for (let start = 0; start < dark.length; start += 1) {
-    if (!dark[start] || seen[start]) continue;
+  const lightRatio = lightMask.reduce((sum, value) => sum + value, 0) / lightMask.length;
+  if (lightRatio < 0.08) {
+    return { dots: [], rejected: true };
+  }
+
+  for (let start = 0; start < pipMask.length; start += 1) {
+    if (!pipMask[start] || seen[start]) continue;
     const queue = [start];
     seen[start] = 1;
     let area = 0;
@@ -138,7 +199,7 @@ function analyzeDominoImage(image, sensitivity) {
 
       const neighbors = [current - 1, current + 1, current - width, current + width];
       for (const next of neighbors) {
-        if (next < 0 || next >= dark.length || seen[next] || !dark[next]) continue;
+        if (next < 0 || next >= pipMask.length || seen[next] || !pipMask[next]) continue;
         const nextX = next % width;
         if (Math.abs(nextX - x) > 1) continue;
         seen[next] = 1;
@@ -150,29 +211,33 @@ function analyzeDominoImage(image, sensitivity) {
     const boxH = maxY - minY + 1;
     const ratio = boxW / boxH;
     const density = area / (boxW * boxH);
-    const scaledMin = Math.max(10, width * height * 0.000012);
-    const scaledMax = Math.max(160, width * height * 0.0022);
+    const scaledMin = Math.max(9, width * height * 0.000009);
+    const scaledMax = Math.max(190, width * height * 0.0018);
+    const centerX = Math.round((minX + maxX) / 2);
+    const centerY = Math.round((minY + maxY) / 2);
+    const radius = Math.max(boxW, boxH) / 2;
     const looksLikePip =
       area >= scaledMin &&
       area <= scaledMax &&
       boxW >= 3 &&
       boxH >= 3 &&
-      ratio > 0.42 &&
-      ratio < 2.35 &&
-      density > 0.28;
+      ratio > 0.52 &&
+      ratio < 1.92 &&
+      density > 0.36;
 
     if (looksLikePip) {
       rawDotLikeShapes += 1;
-      if (!hasDominoSurfaceAround(minX, minY, maxX, maxY)) continue;
+      if (!hasTileSurfaceAround(minX, minY, maxX, maxY)) continue;
+      if (!hasDominoLineNearby(centerX, centerY, radius)) continue;
       dots.push({
-        x: (minX + maxX) / 2 / width,
-        y: (minY + maxY) / 2 / height,
-        radius: Math.max(boxW, boxH) / 2 / width,
+        x: centerX / width,
+        y: centerY / height,
+        radius: radius / width,
       });
     }
   }
 
-  if (rawDotLikeShapes > 220 || dots.length > 168) {
+  if (rawDotLikeShapes > 260 || dots.length > 168) {
     return { dots: [], rejected: true };
   }
 

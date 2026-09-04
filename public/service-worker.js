@@ -1,4 +1,4 @@
-const CACHE_NAME = "domino-rd-v3";
+const CACHE_NAME = "domino-rd-v4";
 const APP_SHELL = [
   "/",
   "/manifest.webmanifest",
@@ -6,7 +6,8 @@ const APP_SHELL = [
   "/assets/icon-192.png",
   "/assets/icon-512.png",
   "/assets/hilario-domino-banner.jpg",
-  "/assets/hilario-laughing-sticker.png"
+  "/assets/hilario-laughing-sticker.png",
+  "/assets/domino-reference.jpg"
 ];
 
 self.addEventListener("install", (event) => {
