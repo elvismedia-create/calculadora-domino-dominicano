@@ -53,49 +53,8 @@ button {
   padding: 18px 0 32px;
 }
 
-.topbar {
-  display: grid;
-  grid-template-columns: 1fr auto;
-  gap: 18px;
-  align-items: end;
-  padding: 16px 0 18px;
-  position: relative;
-}
-
-.topbar::before {
-  content: "";
-  width: 76px;
-  height: 8px;
-  grid-column: 1 / -1;
-  background: linear-gradient(90deg, var(--flag-blue) 0 50%, var(--flag-red) 50%);
-  border-radius: 999px;
-}
-
-h1 {
-  margin: 0;
-  font-size: clamp(2rem, 5.2vw, 4rem);
-  line-height: .95;
-  letter-spacing: 0;
-  text-transform: uppercase;
-  color: var(--flag-blue);
-  text-shadow: 3px 3px 0 rgba(206,17,38,.14);
-}
-
-.subtitle {
-  max-width: 680px;
-  margin: 12px 0 0;
-  color: var(--muted);
-  font-size: 1rem;
-  line-height: 1.5;
-}
-
-.subtitle.compact {
-  margin: 0;
-  font-size: .92rem;
-}
-
 .hero-banner {
-  margin: 0 0 18px;
+  margin: 0 0 16px;
   border: 3px solid rgba(255,255,255,.85);
   border-radius: var(--radius);
   overflow: hidden;
@@ -106,9 +65,9 @@ h1 {
 .hero-banner img {
   display: block;
   width: 100%;
-  height: clamp(120px, 21vw, 210px);
+  height: clamp(190px, 38vw, 460px);
   object-fit: cover;
-  object-position: left center;
+  object-position: center 30%;
 }
 
 .grid {
@@ -950,13 +909,14 @@ select:focus {
 }
 
 @media (max-width: 840px) {
-  .topbar,
   .grid {
     grid-template-columns: 1fr;
   }
 
   .hero-banner img {
-    height: 120px;
+    height: auto;
+    aspect-ratio: 16 / 9;
+    object-position: 42% 32%;
   }
 
   .form-grid,
@@ -973,25 +933,14 @@ select:focus {
     padding-top: 10px;
   }
 
-  .topbar {
-    padding: 12px 0;
-  }
-
-  h1 {
-    font-size: clamp(1.55rem, 8vw, 2.25rem);
-  }
-
-  .subtitle {
-    margin-top: 8px;
-    font-size: .86rem;
-  }
-
   .hero-banner {
     margin-bottom: 10px;
   }
 
   .hero-banner img {
-    height: 92px;
+    height: auto;
+    aspect-ratio: 16 / 9;
+    object-position: 38% 32%;
   }
 
   .panel,

@@ -345,18 +345,9 @@ function App() {
 
   return (
     <main className="app">
-      <header className="topbar">
-        <div>
-          <h1>Calculadora Domino Dominicano</h1>
-          <p className="subtitle">
-            Marcador rapido para partidas por parejas.
-          </p>
-        </div>
+      <header className="hero-banner" aria-label="Hilario domino">
+        <img src="/assets/hilario-domino-banner.jpg" alt="Hilario Domino" />
       </header>
-
-      <section className="hero-banner" aria-label="Domino dominicano">
-        <img src="/assets/domino-dominicano-banner.jpg" alt="Fichas de domino con colores dominicanos" />
-      </section>
 
       <section className="scoreboard" aria-label="Marcador">
         {[0, 1].map((team) => (
