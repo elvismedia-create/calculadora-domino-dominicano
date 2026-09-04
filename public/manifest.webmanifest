@@ -1,7 +1,7 @@
 {
-  "name": "Calculadora Domino Dominicano",
-  "short_name": "Domino RD",
-  "description": "Calculadora de domino dominicano para anotar partidas por bandos.",
+  "name": "Hilario Dominó",
+  "short_name": "Hilario",
+  "description": "Hilario Dominó, calculadora de domino dominicano para anotar partidas por bandos.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
