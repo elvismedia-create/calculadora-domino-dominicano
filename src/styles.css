@@ -119,10 +119,21 @@ button {
   min-height: 212px;
   position: relative;
   overflow: hidden;
+  cursor: pointer;
   border: 2px solid var(--team-color);
   border-top: 12px solid var(--team-color);
   background: linear-gradient(180deg, var(--team-soft), rgba(255,255,255,.96) 42%);
   transition: border-color .18s ease, box-shadow .18s ease, transform .18s ease;
+}
+
+.score-card:focus-visible,
+.history-team:focus-visible,
+.delete-round:focus-visible,
+.btn:focus-visible,
+.capture-btn:focus-visible,
+.quick button:focus-visible {
+  outline: 3px solid var(--gold);
+  outline-offset: 3px;
 }
 
 .score-card::after {
@@ -299,7 +310,7 @@ button {
 
 .entry-grid {
   display: grid;
-  grid-template-columns: minmax(0, 1.2fr) minmax(180px, .8fr);
+  grid-template-columns: 1fr;
   gap: 12px;
   align-items: end;
 }
@@ -333,48 +344,6 @@ input:focus,
 select:focus {
   border-color: rgba(201,25,34,.62);
   box-shadow: 0 0 0 3px rgba(201,25,34,.12);
-}
-
-.team-picker {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 8px;
-}
-
-.team-pick {
-  min-height: 68px;
-  border-radius: var(--radius);
-  border: 2px solid var(--team-border);
-  background: #fff;
-  color: var(--team-color);
-  display: grid;
-  gap: 4px;
-  padding: 10px 12px;
-  text-align: left;
-  transition: transform .15s ease, box-shadow .15s ease, background .15s ease, color .15s ease;
-}
-
-.team-pick span {
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  font-size: .82rem;
-  font-weight: 900;
-  text-transform: uppercase;
-}
-
-.team-pick strong {
-  font-size: 1.7rem;
-  line-height: 1;
-}
-
-.team-pick[aria-pressed="true"] {
-  background: var(--team-color);
-  border-color: var(--team-color);
-  color: #fff;
-  box-shadow: 0 14px 28px var(--team-soft);
-  transform: translateY(-1px);
 }
 
 .actions {

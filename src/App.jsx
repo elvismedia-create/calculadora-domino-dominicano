@@ -139,9 +139,21 @@ function analyzeDominoImage(image, sensitivity) {
   return dots;
 }
 
-function ScoreCard({ index, name, score, last, target, isActive, isLeader, isWinner, onNameChange }) {
+function ScoreCard({ index, name, score, last, target, isActive, isLeader, isWinner, onNameChange, onSelect }) {
   return (
-    <article className={`score-card team-${index} ${isActive ? "is-active" : ""} ${isLeader ? "is-leader" : ""} ${isWinner ? "is-winner" : ""}`}>
+    <article
+      className={`score-card team-${index} ${isActive ? "is-active" : ""} ${isLeader ? "is-leader" : ""} ${isWinner ? "is-winner" : ""}`}
+      role="button"
+      tabIndex={0}
+      aria-pressed={isActive}
+      onClick={onSelect}
+      onKeyDown={(event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          onSelect();
+        }
+      }}
+    >
       <span className="winner-ribbon">Gano</span>
       <span className="side-label">Bando {index === 0 ? "rojo" : "azul"}</span>
       <div className="team-head">
@@ -149,6 +161,8 @@ function ScoreCard({ index, name, score, last, target, isActive, isLeader, isWin
           className="team-name"
           value={name}
           aria-label={`Nombre ${name}`}
+          onClick={(event) => event.stopPropagation()}
+          onKeyDown={(event) => event.stopPropagation()}
           onChange={(event) => onNameChange(index, event.target.value)}
         />
       </div>
@@ -388,6 +402,7 @@ function App() {
             isLeader={totals[team] === leaderScore && leaderScore > 0}
             isWinner={totals[team] >= state.target}
             onNameChange={updateTeam}
+            onSelect={() => setWinner(team)}
           />
         ))}
       </section>
@@ -395,25 +410,8 @@ function App() {
       <section className="grid">
         <div>
           <section className="panel new-round">
-            <h2>Nueva mano</h2>
+            <h2>Anotación</h2>
             <div className="entry-grid">
-              <div className="field">
-                <span>Equipo que anota</span>
-                <div className="team-picker" role="group" aria-label="Equipo que anota">
-                  {[0, 1].map((team) => (
-                    <button
-                      key={team}
-                      className={`team-pick team-${team}`}
-                      type="button"
-                      aria-pressed={winner === team}
-                      onClick={() => setWinner(team)}
-                    >
-                      <span>{state.teams[team]}</span>
-                      <strong>{totals[team]}</strong>
-                    </button>
-                  ))}
-                </div>
-              </div>
               <label className="field">
                 <span>Puntos contados</span>
                 <input
