@@ -74,6 +74,40 @@ function analyzeDominoImage(image, sensitivity) {
   const dark = new Uint8Array(width * height);
   const seen = new Uint8Array(width * height);
   const dots = [];
+  let rawDotLikeShapes = 0;
+
+  function lumaAt(x, y) {
+    const offset = (y * width + x) * 4;
+    return data[offset] * 0.299 + data[offset + 1] * 0.587 + data[offset + 2] * 0.114;
+  }
+
+  function hasDominoSurfaceAround(minX, minY, maxX, maxY) {
+    const boxW = maxX - minX + 1;
+    const boxH = maxY - minY + 1;
+    const pad = Math.max(8, Math.round(Math.max(boxW, boxH) * 2.8));
+    const left = Math.max(0, minX - pad);
+    const right = Math.min(width - 1, maxX + pad);
+    const top = Math.max(0, minY - pad);
+    const bottom = Math.min(height - 1, maxY + pad);
+    let samples = 0;
+    let lightSamples = 0;
+    let veryDarkSamples = 0;
+
+    const step = Math.max(2, Math.round(pad / 4));
+    for (let y = top; y <= bottom; y += step) {
+      for (let x = left; x <= right; x += step) {
+        const insidePip = x >= minX && x <= maxX && y >= minY && y <= maxY;
+        if (insidePip) continue;
+        const luma = lumaAt(x, y);
+        samples += 1;
+        if (luma > 145) lightSamples += 1;
+        if (luma < 72) veryDarkSamples += 1;
+      }
+    }
+
+    if (!samples) return false;
+    return lightSamples / samples > 0.48 && veryDarkSamples / samples < 0.28;
+  }
 
   for (let index = 0; index < width * height; index += 1) {
     const offset = index * 4;
@@ -128,6 +162,8 @@ function analyzeDominoImage(image, sensitivity) {
       density > 0.28;
 
     if (looksLikePip) {
+      rawDotLikeShapes += 1;
+      if (!hasDominoSurfaceAround(minX, minY, maxX, maxY)) continue;
       dots.push({
         x: (minX + maxX) / 2 / width,
         y: (minY + maxY) / 2 / height,
@@ -136,7 +172,11 @@ function analyzeDominoImage(image, sensitivity) {
     }
   }
 
-  return dots;
+  if (rawDotLikeShapes > 220 || dots.length > 168) {
+    return { dots: [], rejected: true };
+  }
+
+  return { dots, rejected: false };
 }
 
 function ScoreCard({ index, name, score, last, target, isActive, isLeader, isWinner, onNameChange, onSelect }) {
@@ -367,9 +407,14 @@ function App() {
       setToast("Elige una foto primero.");
       return;
     }
-    const dots = analyzeDominoImage(imageRef.current, scanner.sensitivity);
+    const result = analyzeDominoImage(imageRef.current, scanner.sensitivity);
+    const dots = result.dots;
     setScanner((current) => ({ ...current, dots, analyzed: true }));
-    setToast(dots.length ? `${dots.length} puntos detectados.` : "No detecte puntos claros.");
+    if (result.rejected) {
+      setToast("No parece una foto de fichas. Prueba de nuevo.");
+      return;
+    }
+    setToast(dots.length ? `${dots.length} puntos detectados.` : "No detecte fichas claras.");
   }
 
   function useScanResult() {
