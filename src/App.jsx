@@ -21,6 +21,26 @@ const confettiPieces = Array.from({ length: 42 }, (_, index) => ({
   size: `${8 + (index % 4) * 3}px`,
 }));
 
+function IntroScreen() {
+  return (
+    <section className="intro-screen" aria-label="Cargando Hilario Domino">
+      <div className="intro-card">
+        <div className="intro-sticker" aria-hidden="true">
+          <img src="/assets/hilario-laughing-sticker.png" alt="" />
+          <span>Ja ja ja</span>
+        </div>
+        <div className="intro-title">
+          <strong>Hilario Domino</strong>
+          <span>Cargando mesa</span>
+        </div>
+        <div className="intro-bar" aria-hidden="true">
+          <span />
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function cleanNumber(value) {
   const number = Number(value);
   return Number.isFinite(number) && number > 0 ? Math.round(number) : 0;
@@ -146,6 +166,7 @@ function ScoreCard({ index, name, score, last, target, isActive, isLeader, isWin
 
 function App() {
   const [state, setState] = useState(loadState);
+  const [showIntro, setShowIntro] = useState(true);
   const [winner, setWinner] = useState(0);
   const [points, setPoints] = useState(0);
   const [toast, setToast] = useState("");
@@ -179,6 +200,11 @@ function App() {
     if ("serviceWorker" in navigator) {
       navigator.serviceWorker.register("/service-worker.js").catch(() => undefined);
     }
+  }, []);
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => setShowIntro(false), 2400);
+    return () => window.clearTimeout(timer);
   }, []);
 
   useEffect(() => {
@@ -665,6 +691,8 @@ function App() {
       <div className={`toast ${toast ? "show" : ""}`} role="status" aria-live="polite">
         {toast}
       </div>
+
+      {showIntro && <IntroScreen />}
     </main>
   );
 }

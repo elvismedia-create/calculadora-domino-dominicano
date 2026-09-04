@@ -1,9 +1,12 @@
-const CACHE_NAME = "domino-rd-v2";
+const CACHE_NAME = "domino-rd-v3";
 const APP_SHELL = [
   "/",
   "/manifest.webmanifest",
-  "/assets/icon.svg",
-  "/assets/hilario-domino-banner.jpg"
+  "/assets/apple-touch-icon.png",
+  "/assets/icon-192.png",
+  "/assets/icon-512.png",
+  "/assets/hilario-domino-banner.jpg",
+  "/assets/hilario-laughing-sticker.png"
 ];
 
 self.addEventListener("install", (event) => {
