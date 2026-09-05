@@ -4,6 +4,7 @@ import { createRoot } from "react-dom/client";
 import "./styles.css";
 
 const STORE_KEY = "dominican-domino-calculator-react-v1";
+const UPDATE_RELOAD_KEY = "hilario-domino-update-reload";
 
 const initialState = {
   teams: ["Equipo A", "Equipo B"],
@@ -299,9 +300,54 @@ function App() {
   }, [state]);
 
   useEffect(() => {
-    if ("serviceWorker" in navigator) {
-      navigator.serviceWorker.register("/service-worker.js").catch(() => undefined);
-    }
+    if (!("serviceWorker" in navigator)) return undefined;
+
+    let refreshing = false;
+    sessionStorage.removeItem(UPDATE_RELOAD_KEY);
+
+    const reloadForUpdate = () => {
+      if (refreshing || sessionStorage.getItem(UPDATE_RELOAD_KEY) === "1") return;
+      refreshing = true;
+      sessionStorage.setItem(UPDATE_RELOAD_KEY, "1");
+      window.location.reload();
+    };
+
+    const registerWorker = async () => {
+      const registration = await navigator.serviceWorker.register("/service-worker.js", { updateViaCache: "none" });
+
+      registration.addEventListener("updatefound", () => {
+        const worker = registration.installing;
+        if (!worker) return;
+
+        worker.addEventListener("statechange", () => {
+          if (worker.state === "activated" && navigator.serviceWorker.controller) {
+            reloadForUpdate();
+          }
+        });
+      });
+
+      if (registration.waiting && navigator.serviceWorker.controller) {
+        registration.waiting.postMessage({ type: "SKIP_WAITING" });
+      }
+
+      await registration.update();
+    };
+
+    const checkForUpdates = () => {
+      if (document.visibilityState !== "visible") return;
+      navigator.serviceWorker.getRegistration().then((registration) => registration?.update());
+    };
+
+    window.addEventListener("focus", checkForUpdates);
+    document.addEventListener("visibilitychange", checkForUpdates);
+    navigator.serviceWorker.addEventListener("controllerchange", reloadForUpdate);
+    registerWorker().catch(() => undefined);
+
+    return () => {
+      window.removeEventListener("focus", checkForUpdates);
+      document.removeEventListener("visibilitychange", checkForUpdates);
+      navigator.serviceWorker.removeEventListener("controllerchange", reloadForUpdate);
+    };
   }, []);
 
   useEffect(() => {
