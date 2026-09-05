@@ -66,182 +66,165 @@ function analyzeDominoImage(image, sensitivity) {
   const ctx = canvas.getContext("2d", { willReadFrequently: true });
   const maxWidth = 900;
   const scale = Math.min(1, maxWidth / image.naturalWidth);
-  canvas.width = Math.max(1, Math.round(image.naturalWidth * scale));
-  canvas.height = Math.max(1, Math.round(image.naturalHeight * scale));
-  ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+  const width = Math.max(1, Math.round(image.naturalWidth * scale));
+  const height = Math.max(1, Math.round(image.naturalHeight * scale));
+  canvas.width = width;
+  canvas.height = height;
+  ctx.drawImage(image, 0, 0, width, height);
 
-  const { data, width, height } = ctx.getImageData(0, 0, canvas.width, canvas.height);
-  const pipMask = new Uint8Array(width * height);
-  const seen = new Uint8Array(width * height);
-  const lightMask = new Uint8Array(width * height);
-  const dots = [];
-  let rawDotLikeShapes = 0;
-
-  function pixelAt(x, y) {
-    const offset = (y * width + x) * 4;
-    const r = data[offset];
-    const g = data[offset + 1];
-    const b = data[offset + 2];
-    const alpha = data[offset + 3];
-    const luma = r * 0.299 + g * 0.587 + b * 0.114;
-    const saturation = Math.max(r, g, b) - Math.min(r, g, b);
-    return { r, g, b, alpha, luma, saturation };
+  const total = width * height;
+  const { data } = ctx.getImageData(0, 0, width, height);
+  const luma = new Float32Array(total);
+  for (let i = 0; i < total; i += 1) {
+    const offset = i * 4;
+    luma[i] = data[offset] * 0.299 + data[offset + 1] * 0.587 + data[offset + 2] * 0.114;
   }
 
-  function isPipPixel(pixel) {
-    const blackPip = pixel.luma < sensitivity;
-    const redPip = pixel.r > 105 && pixel.g < 95 && pixel.b < 105 && pixel.saturation > 45;
-    const bluePip = pixel.b > 85 && pixel.r < 115 && pixel.g < 140 && pixel.saturation > 38;
-    return pixel.alpha > 80 && (blackPip || redPip || bluePip);
-  }
-
-  function isLightTilePixel(pixel) {
-    return pixel.alpha > 80 && pixel.luma > 150 && pixel.saturation < 86;
-  }
-
-  function hasTileSurfaceAround(minX, minY, maxX, maxY) {
-    const boxW = maxX - minX + 1;
-    const boxH = maxY - minY + 1;
-    const pad = Math.max(10, Math.round(Math.max(boxW, boxH) * 3.2));
-    const left = Math.max(0, minX - pad);
-    const right = Math.min(width - 1, maxX + pad);
-    const top = Math.max(0, minY - pad);
-    const bottom = Math.min(height - 1, maxY + pad);
-    let samples = 0;
-    let lightSamples = 0;
-    let veryDarkSamples = 0;
-
-    const step = Math.max(2, Math.round(pad / 4));
-    for (let y = top; y <= bottom; y += step) {
-      for (let x = left; x <= right; x += step) {
-        const insidePip = x >= minX && x <= maxX && y >= minY && y <= maxY;
-        if (insidePip) continue;
-        samples += 1;
-        if (lightMask[y * width + x]) lightSamples += 1;
-        if (pixelAt(x, y).luma < 72) veryDarkSamples += 1;
-      }
+  // Imagen integral: nivel de fondo local, para aguantar luz desigual y sombras.
+  const stride = width + 1;
+  const integral = new Float64Array(stride * (height + 1));
+  for (let y = 0; y < height; y += 1) {
+    let rowSum = 0;
+    for (let x = 0; x < width; x += 1) {
+      rowSum += luma[y * width + x];
+      integral[(y + 1) * stride + (x + 1)] = integral[y * stride + (x + 1)] + rowSum;
     }
-
-    if (!samples) return false;
-    return lightSamples / samples > 0.38 && veryDarkSamples / samples < 0.34;
   }
 
-  function hasDominoLineNearby(centerX, centerY, radius) {
-    const search = Math.max(16, Math.round(radius * 6));
-    const left = Math.max(0, centerX - search);
-    const right = Math.min(width - 1, centerX + search);
-    const top = Math.max(0, centerY - search);
-    const bottom = Math.min(height - 1, centerY + search);
-    let horizontalHits = 0;
-    let verticalHits = 0;
+  const bgRadius = Math.max(8, Math.round(Math.min(width, height) / 22));
+  function localMean(x, y) {
+    const x0 = Math.max(0, x - bgRadius);
+    const y0 = Math.max(0, y - bgRadius);
+    const x1 = Math.min(width, x + bgRadius + 1);
+    const y1 = Math.min(height, y + bgRadius + 1);
+    const sum =
+      integral[y1 * stride + x1] -
+      integral[y0 * stride + x1] -
+      integral[y1 * stride + x0] +
+      integral[y0 * stride + x0];
+    return sum / ((x1 - x0) * (y1 - y0));
+  }
 
-    for (let y = top; y <= bottom; y += 2) {
-      let run = 0;
-      for (let x = left; x <= right; x += 1) {
-        const pixel = pixelAt(x, y);
-        if (pixel.luma < 86 && pixel.saturation < 92) {
-          run += 1;
-          horizontalHits = Math.max(horizontalHits, run);
-        } else {
-          run = 0;
-        }
-      }
+  // La sensibilidad del control (0-100) se traduce en cuanto contraste exigimos.
+  const contrast = Math.max(18, Math.min(90, 75 - sensitivity * 0.5));
+  const dark = new Uint8Array(total);
+  for (let y = 0; y < height; y += 1) {
+    for (let x = 0; x < width; x += 1) {
+      const index = y * width + x;
+      const value = luma[index];
+      dark[index] = value < 205 && value < localMean(x, y) - contrast ? 1 : 0;
     }
-
-    for (let x = left; x <= right; x += 2) {
-      let run = 0;
-      for (let y = top; y <= bottom; y += 1) {
-        const pixel = pixelAt(x, y);
-        if (pixel.luma < 86 && pixel.saturation < 92) {
-          run += 1;
-          verticalHits = Math.max(verticalHits, run);
-        } else {
-          run = 0;
-        }
-      }
-    }
-
-    return horizontalHits >= radius * 2.3 || verticalHits >= radius * 2.3;
   }
 
-  for (let index = 0; index < width * height; index += 1) {
-    const x = index % width;
-    const y = Math.floor(index / width);
-    const pixel = pixelAt(x, y);
-    pipMask[index] = isPipPixel(pixel) ? 1 : 0;
-    lightMask[index] = isLightTilePixel(pixel) ? 1 : 0;
-  }
+  const seen = new Uint8Array(total);
+  const stack = new Int32Array(total);
+  const candidates = [];
+  const minArea = Math.max(6, total * 0.000006);
+  const maxArea = total * 0.004;
 
-  const lightRatio = lightMask.reduce((sum, value) => sum + value, 0) / lightMask.length;
-  if (lightRatio < 0.08) {
-    return { dots: [], rejected: true };
-  }
-
-  for (let start = 0; start < pipMask.length; start += 1) {
-    if (!pipMask[start] || seen[start]) continue;
-    const queue = [start];
+  for (let start = 0; start < total; start += 1) {
+    if (!dark[start] || seen[start]) continue;
+    let top = 0;
+    stack[top] = start;
+    top += 1;
     seen[start] = 1;
+
     let area = 0;
+    let lumaSum = 0;
     let minX = width;
     let minY = height;
     let maxX = 0;
     let maxY = 0;
 
-    for (let cursor = 0; cursor < queue.length; cursor += 1) {
-      const current = queue[cursor];
+    while (top > 0) {
+      top -= 1;
+      const current = stack[top];
       const x = current % width;
-      const y = Math.floor(current / width);
+      const y = (current - x) / width;
       area += 1;
-      minX = Math.min(minX, x);
-      minY = Math.min(minY, y);
-      maxX = Math.max(maxX, x);
-      maxY = Math.max(maxY, y);
+      lumaSum += luma[current];
+      if (x < minX) minX = x;
+      if (x > maxX) maxX = x;
+      if (y < minY) minY = y;
+      if (y > maxY) maxY = y;
 
-      const neighbors = [current - 1, current + 1, current - width, current + width];
-      for (const next of neighbors) {
-        if (next < 0 || next >= pipMask.length || seen[next] || !pipMask[next]) continue;
-        const nextX = next % width;
-        if (Math.abs(nextX - x) > 1) continue;
-        seen[next] = 1;
-        queue.push(next);
+      if (x > 0 && dark[current - 1] && !seen[current - 1]) {
+        seen[current - 1] = 1;
+        stack[top] = current - 1;
+        top += 1;
+      }
+      if (x < width - 1 && dark[current + 1] && !seen[current + 1]) {
+        seen[current + 1] = 1;
+        stack[top] = current + 1;
+        top += 1;
+      }
+      if (y > 0 && dark[current - width] && !seen[current - width]) {
+        seen[current - width] = 1;
+        stack[top] = current - width;
+        top += 1;
+      }
+      if (y < height - 1 && dark[current + width] && !seen[current + width]) {
+        seen[current + width] = 1;
+        stack[top] = current + width;
+        top += 1;
       }
     }
 
+    if (area < minArea || area > maxArea) continue;
     const boxW = maxX - minX + 1;
     const boxH = maxY - minY + 1;
+    if (boxW < 3 || boxH < 3) continue;
+    if (minX === 0 || minY === 0 || maxX === width - 1 || maxY === height - 1) continue;
+
     const ratio = boxW / boxH;
-    const density = area / (boxW * boxH);
-    const scaledMin = Math.max(9, width * height * 0.000009);
-    const scaledMax = Math.max(190, width * height * 0.0018);
-    const centerX = Math.round((minX + maxX) / 2);
-    const centerY = Math.round((minY + maxY) / 2);
-    const radius = Math.max(boxW, boxH) / 2;
-    const looksLikePip =
-      area >= scaledMin &&
-      area <= scaledMax &&
-      boxW >= 3 &&
-      boxH >= 3 &&
-      ratio > 0.52 &&
-      ratio < 1.92 &&
-      density > 0.36;
+    if (ratio < 0.55 || ratio > 1.85) continue;
+    if (area / (boxW * boxH) < 0.55) continue;
 
-    if (looksLikePip) {
-      rawDotLikeShapes += 1;
-      if (!hasTileSurfaceAround(minX, minY, maxX, maxY)) continue;
-      if (!hasDominoLineNearby(centerX, centerY, radius)) continue;
-      dots.push({
-        x: centerX / width,
-        y: centerY / height,
-        radius: radius / width,
-      });
-    }
+    const radius = (boxW + boxH) / 4;
+    const circularity = area / (Math.PI * radius * radius);
+    if (circularity < 0.62 || circularity > 1.45) continue;
+
+    const centerX = (minX + maxX) / 2;
+    const centerY = (minY + maxY) / 2;
+    // Un punto tiene que ser claramente mas oscuro que la cara de la ficha.
+    if (localMean(Math.round(centerX), Math.round(centerY)) - lumaSum / area < 26) continue;
+
+    candidates.push({ centerX, centerY, radius, area });
   }
 
-  if (rawDotLikeShapes > 260 || dots.length > 168) {
-    return { dots: [], rejected: true };
+  if (!candidates.length) return { dots: [], rejected: true };
+
+  // Los puntos de una misma foto miden practicamente lo mismo: fuera lo que se salga.
+  const radii = candidates.map((candidate) => candidate.radius).sort((a, b) => a - b);
+  const median = radii[Math.floor(radii.length / 2)];
+  const sized = candidates.filter(
+    (candidate) => candidate.radius >= median * 0.55 && candidate.radius <= median * 1.75,
+  );
+  if (!sized.length) return { dots: [], rejected: true };
+
+  sized.sort((a, b) => b.area - a.area);
+  const kept = [];
+  for (const candidate of sized) {
+    const duplicated = kept.some((other) => {
+      const dx = candidate.centerX - other.centerX;
+      const dy = candidate.centerY - other.centerY;
+      const limit = Math.min(candidate.radius, other.radius) * 0.8;
+      return dx * dx + dy * dy < limit * limit;
+    });
+    if (!duplicated) kept.push(candidate);
   }
 
-  return { dots, rejected: false };
+  if (kept.length > 200) return { dots: [], rejected: true };
+
+  kept.sort((a, b) => a.centerY - b.centerY || a.centerX - b.centerX);
+  return {
+    dots: kept.map((candidate) => ({
+      x: candidate.centerX / width,
+      y: candidate.centerY / height,
+      radius: candidate.radius / width,
+    })),
+    rejected: false,
+  };
 }
 
 function ScoreCard({ index, name, score, last, target, isActive, isLeader, isWinner, onNameChange, onSelect }) {
@@ -291,7 +274,7 @@ function App() {
   const [toast, setToast] = useState("");
   const [winnerMessage, setWinnerMessage] = useState(null);
   const [deleteConfirm, setDeleteConfirm] = useState(null);
-  const [scanner, setScanner] = useState({ image: "", dots: [], sensitivity: 86, analyzed: false });
+  const [scanner, setScanner] = useState({ image: "", dots: [], sensitivity: 62, analyzed: false });
   const [scannerOpen, setScannerOpen] = useState(false);
   const imageRef = useRef(null);
   const videoRef = useRef(null);
@@ -475,11 +458,11 @@ function App() {
     const result = analyzeDominoImage(imageRef.current, scanner.sensitivity);
     const dots = result.dots;
     setScanner((current) => ({ ...current, dots, analyzed: true }));
-    if (result.rejected) {
-      setToast("No parece una foto de fichas. Prueba de nuevo.");
+    if (result.rejected || !dots.length) {
+      setToast("No detecte puntos. Acerca las fichas o mueve la sensibilidad.");
       return;
     }
-    setToast(dots.length ? `${dots.length} puntos detectados.` : "No detecte fichas claras.");
+    setToast(`${dots.length} puntos detectados.`);
   }
 
   function useScanResult() {
@@ -597,8 +580,7 @@ function App() {
                           style={{
                             left: `${dot.x * 100}%`,
                             top: `${dot.y * 100}%`,
-                            width: `${Math.max(dot.radius * 220, 12)}px`,
-                            height: `${Math.max(dot.radius * 220, 12)}px`,
+                            width: `${Math.max(dot.radius * 2 * 100, 2.6)}%`,
                           }}
                         />
                       ))}
@@ -609,10 +591,15 @@ function App() {
                       <span>Sensibilidad</span>
                       <input
                         type="range"
-                        min="45"
-                        max="150"
+                        min="0"
+                        max="100"
                         value={scanner.sensitivity}
-                        onChange={(event) => setScanner((current) => ({ ...current, sensitivity: Number(event.target.value) }))}
+                        onChange={(event) => {
+                          const sensitivity = Number(event.target.value);
+                          setScanner((current) => ({ ...current, sensitivity }));
+                        }}
+                        onMouseUp={scanImage}
+                        onTouchEnd={scanImage}
                       />
                     </label>
                     <div className="scan-result">
