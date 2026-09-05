@@ -443,11 +443,27 @@ function App() {
     setToast("Partida nueva lista.");
   }
 
+  function clearScanPhoto() {
+    setScanner((current) => {
+      if (current.image) URL.revokeObjectURL(current.image);
+      return { ...current, image: "", dots: [], analyzed: false };
+    });
+  }
+
+  function discardPhoto() {
+    clearScanPhoto();
+    setToast("Foto desechada. Toma otra cuando quieras.");
+  }
+
   function handleImage(event) {
     const file = event.target.files?.[0];
     if (!file) return;
-    if (scanner.image) URL.revokeObjectURL(scanner.image);
-    setScanner({ image: URL.createObjectURL(file), dots: [], sensitivity: scanner.sensitivity, analyzed: false });
+    const imageUrl = URL.createObjectURL(file);
+    setScanner((current) => {
+      if (current.image) URL.revokeObjectURL(current.image);
+      return { ...current, image: imageUrl, dots: [], analyzed: false };
+    });
+    event.target.value = "";
   }
 
   async function startCamera() {
@@ -490,8 +506,11 @@ function App() {
         setToast("No pude capturar la foto.");
         return;
       }
-      if (scanner.image) URL.revokeObjectURL(scanner.image);
-      setScanner((current) => ({ ...current, image: URL.createObjectURL(blob), dots: [], analyzed: false }));
+      const imageUrl = URL.createObjectURL(blob);
+      setScanner((current) => {
+        if (current.image) URL.revokeObjectURL(current.image);
+        return { ...current, image: imageUrl, dots: [], analyzed: false };
+      });
       setToast("Foto capturada.");
     }, "image/jpeg", 0.92);
   }
@@ -512,12 +531,15 @@ function App() {
   }
 
   function useScanResult() {
-    setPoints(scanner.dots.length);
-    setToast(`${scanner.dots.length} puntos pasados a la mano.`);
+    const total = scanner.dots.length;
+    setPoints(total);
+    clearScanPhoto();
+    setToast(`${total} puntos pasados a la mano.`);
   }
 
   function useScanAndScore() {
     const total = scanner.dots.length;
+    clearScanPhoto();
     setPoints(0);
     addRound(total);
   }
@@ -588,7 +610,13 @@ function App() {
               <div className="scanner-head">
                 <div>
                   <h3>Calcular por foto</h3>
-                  <p>{scannerOpen ? "Enfoca las fichas y captura el conteo." : "Pulsa camara para abrir el visor."}</p>
+                  <p>
+                    {scanner.image
+                      ? "Si esa foto no sirve, desechala o toma otra."
+                      : scannerOpen
+                        ? "Enfoca las fichas y captura el conteo."
+                        : "Pulsa camara para abrir el visor."}
+                  </p>
                 </div>
                 <div className="camera-actions">
                   <button className="capture-btn" type="button" onClick={startCamera}>
@@ -619,6 +647,16 @@ function App() {
                   {scanner.image && (
                     <div className="photo-box">
                       <img ref={imageRef} src={scanner.image} alt="Fichas para calcular" onLoad={scanImage} />
+                      <div className="photo-actions">
+                        <button className="photo-action" type="button" onClick={discardPhoto}>
+                          <X size={16} />
+                          Desechar
+                        </button>
+                        <button className="photo-action photo-action--primary" type="button" onClick={captureFromCamera}>
+                          <Camera size={16} />
+                          Tomar otra
+                        </button>
+                      </div>
                       {scanner.dots.map((dot, index) => (
                         <span
                           className="detected-dot"

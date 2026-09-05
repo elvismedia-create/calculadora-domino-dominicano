@@ -536,6 +536,39 @@ select:focus {
   height: auto;
 }
 
+.photo-actions {
+  position: absolute;
+  left: 10px;
+  right: 10px;
+  bottom: 10px;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.photo-action {
+  min-height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border: 0;
+  border-radius: 999px;
+  background: rgba(255,255,255,.94);
+  color: var(--flag-red);
+  box-shadow: 0 10px 26px rgba(0,0,0,.22);
+  font-size: .78rem;
+  font-weight: 950;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.photo-action--primary {
+  background: var(--flag-blue);
+  color: #fff;
+}
+
 .detected-dot {
   position: absolute;
   aspect-ratio: 1;
