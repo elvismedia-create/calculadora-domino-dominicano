@@ -275,7 +275,8 @@ function App() {
   const [toast, setToast] = useState("");
   const [winnerMessage, setWinnerMessage] = useState(null);
   const [deleteConfirm, setDeleteConfirm] = useState(null);
-  const [scanner, setScanner] = useState({ image: "", dots: [], sensitivity: 62, analyzed: false });
+  const [scanScoreConfirm, setScanScoreConfirm] = useState(null);
+  const [scanner, setScanner] = useState({ image: "", dots: [], sensitivity: 0, analyzed: false });
   const [scannerOpen, setScannerOpen] = useState(false);
   const imageRef = useRef(null);
   const videoRef = useRef(null);
@@ -384,8 +385,9 @@ function App() {
     setState((current) => ({ ...current, [key]: Math.max(cleanNumber(value), minimum) }));
   }
 
-  function addRound(totalOverride) {
+  function addRound(totalOverride, teamOverride = winner) {
     const total = cleanNumber(totalOverride ?? points);
+    const scoringTeam = teamOverride;
 
     if (!total) {
       setToast("Anota puntos primero.");
@@ -393,7 +395,7 @@ function App() {
     }
 
     const round = {
-      team: winner,
+      team: scoringTeam,
       base: total,
       total,
       note: "",
@@ -401,17 +403,27 @@ function App() {
     };
 
     const nextRounds = [...state.rounds, round];
-    const nextScore = nextRounds.reduce((sum, item) => sum + (item.team === winner ? item.total : 0), 0);
+    const nextScore = nextRounds.reduce((sum, item) => sum + (item.team === scoringTeam ? item.total : 0), 0);
 
     setState((current) => ({ ...current, rounds: nextRounds }));
+    setWinner(scoringTeam);
     setPoints(0);
 
     if (nextScore >= state.target) {
       setWinnerMessage({
-        title: `${state.teams[winner]} gana`,
+        title: `${state.teams[scoringTeam]} gana`,
         text: `Llego a ${nextScore} puntos de una meta de ${state.target}.`,
       });
     }
+  }
+
+  function confirmScanScore(team) {
+    if (!scanScoreConfirm) return;
+    const total = scanScoreConfirm.total;
+    setScanScoreConfirm(null);
+    clearScanPhoto();
+    setPoints(0);
+    addRound(total, team);
   }
 
   function undoRound() {
@@ -439,6 +451,7 @@ function App() {
     setWinner(0);
     setPoints(0);
     setDeleteConfirm(null);
+    setScanScoreConfirm(null);
     setWinnerMessage(null);
     setToast("Partida nueva lista.");
   }
@@ -539,9 +552,7 @@ function App() {
 
   function useScanAndScore() {
     const total = scanner.dots.length;
-    clearScanPhoto();
-    setPoints(0);
-    addRound(total);
+    setScanScoreConfirm({ total });
   }
 
   return (
@@ -704,7 +715,7 @@ function App() {
                     </button>
                     <button className="btn primary score-submit" type="button" onClick={useScanAndScore} disabled={!scanner.analyzed || !scanner.dots.length}>
                       <Check size={18} />
-                      Usar y anotar
+                      Elegir bando y anotar
                     </button>
                     <label className="fallback-upload">
                       Subir imagen
@@ -830,6 +841,34 @@ function App() {
                 Cancelar
               </button>
             </div>
+          </section>
+        </div>
+      )}
+
+      {scanScoreConfirm && (
+        <div className="modal-backdrop" role="presentation">
+          <section className="modal scan-confirm-modal" role="dialog" aria-modal="true" aria-labelledby="scan-score-title">
+            <Check size={30} />
+            <h3 id="scan-score-title">A que bando van?</h3>
+            <p>La camara conto {scanScoreConfirm.total} puntos. Elige el bando antes de anotar.</p>
+            <div className="scan-team-options">
+              {[0, 1].map((team) => (
+                <button
+                  className={`scan-team-option team-${team} ${winner === team ? "is-active" : ""}`}
+                  type="button"
+                  key={team}
+                  onClick={() => confirmScanScore(team)}
+                >
+                  <span>{team === 0 ? "Bando rojo" : "Bando azul"}</span>
+                  <strong>{state.teams[team]}</strong>
+                  <em>+{scanScoreConfirm.total}</em>
+                </button>
+              ))}
+            </div>
+            <button className="btn secondary" type="button" onClick={() => setScanScoreConfirm(null)}>
+              <X size={18} />
+              Cancelar
+            </button>
           </section>
         </div>
       )}

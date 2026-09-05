@@ -916,6 +916,61 @@ select:focus {
   line-height: 1.45;
 }
 
+.scan-team-options {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.scan-team-option {
+  min-height: 132px;
+  display: grid;
+  align-content: center;
+  gap: 6px;
+  padding: 14px 10px;
+  border: 3px solid var(--team-color);
+  border-radius: var(--radius);
+  background: linear-gradient(180deg, var(--team-color), var(--team-color) 52%, var(--team-soft) 52%, #fff 100%);
+  color: #fff;
+  box-shadow: 0 16px 30px var(--team-soft);
+  cursor: pointer;
+  text-align: center;
+}
+
+.scan-team-option.is-active {
+  outline: 4px solid var(--team-soft);
+}
+
+.scan-team-option span,
+.scan-team-option strong,
+.scan-team-option em {
+  display: block;
+}
+
+.scan-team-option span {
+  font-size: .78rem;
+  font-weight: 950;
+  text-transform: uppercase;
+}
+
+.scan-team-option strong {
+  overflow: hidden;
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 950;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.scan-team-option em {
+  margin-top: 8px;
+  color: var(--team-color);
+  font-size: 2rem;
+  font-style: normal;
+  font-weight: 950;
+}
+
 .intro-screen {
   position: fixed;
   inset: 0;
