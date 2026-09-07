@@ -448,6 +448,8 @@ function App() {
     const total = scanScoreConfirm.total;
     setScanScoreConfirm(null);
     clearScanPhoto();
+    stopCamera();
+    setScannerOpen(false);
     setPoints(0);
     addRound(total, team);
   }
