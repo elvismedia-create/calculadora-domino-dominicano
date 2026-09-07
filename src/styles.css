@@ -481,6 +481,20 @@ select:focus {
   border: 1px solid var(--line);
 }
 
+.flash-btn {
+  background: #111827;
+  color: #fff;
+}
+
+.flash-btn.is-on {
+  background: var(--gold);
+  color: #1d2433;
+}
+
+.flash-btn:disabled {
+  opacity: .45;
+}
+
 .camera-actions .capture-btn:only-child {
   grid-column: 1 / -1;
 }
@@ -1238,7 +1252,7 @@ select:focus {
 
   .camera-actions {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
   .capture-btn {

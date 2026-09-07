@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { Camera, CameraOff, Check, RotateCcw, Save, Trash2, Trophy, Undo2, X } from "lucide-react";
+import { Camera, CameraOff, Check, Flashlight, FlashlightOff, RotateCcw, Save, Trash2, Trophy, Undo2, X } from "lucide-react";
 import { createRoot } from "react-dom/client";
 import "./styles.css";
 
@@ -292,6 +292,7 @@ function App() {
   const [scanScoreConfirm, setScanScoreConfirm] = useState(null);
   const [scanner, setScanner] = useState({ image: "", dots: [], analyzed: false });
   const [scannerOpen, setScannerOpen] = useState(false);
+  const [torch, setTorch] = useState({ supported: false, on: false });
   const imageRef = useRef(null);
   const videoRef = useRef(null);
   const streamRef = useRef(null);
@@ -503,6 +504,9 @@ function App() {
         audio: false,
       });
       streamRef.current = stream;
+      const videoTrack = stream.getVideoTracks()[0];
+      const capabilities = videoTrack?.getCapabilities?.() || {};
+      setTorch({ supported: Boolean(capabilities.torch), on: false });
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
         await videoRef.current.play();
@@ -514,9 +518,33 @@ function App() {
   }
 
   function stopCamera() {
+    setTorch({ supported: false, on: false });
     streamRef.current?.getTracks().forEach((track) => track.stop());
     streamRef.current = null;
     if (videoRef.current) videoRef.current.srcObject = null;
+  }
+
+  async function toggleTorch() {
+    const track = streamRef.current?.getVideoTracks()[0];
+    if (!track) {
+      setToast("Abre la camara primero.");
+      return;
+    }
+    const capabilities = track.getCapabilities?.() || {};
+    if (!capabilities.torch) {
+      setTorch({ supported: false, on: false });
+      setToast("Este movil no deja encender el flash desde la app.");
+      return;
+    }
+
+    const nextTorch = !torch.on;
+    try {
+      await track.applyConstraints({ advanced: [{ torch: nextTorch }] });
+      setTorch({ supported: true, on: nextTorch });
+      setToast(nextTorch ? "Flash encendido." : "Flash apagado.");
+    } catch {
+      setToast("No pude cambiar el flash en este navegador.");
+    }
   }
 
   function captureFromCamera() {
@@ -647,13 +675,19 @@ function App() {
                     Camara
                   </button>
                   {scannerOpen && (
-                    <button className="capture-btn capture-btn--light" type="button" onClick={() => {
-                      stopCamera();
-                      setScannerOpen(false);
-                    }}>
-                      <CameraOff size={18} />
-                      Cerrar
-                    </button>
+                    <>
+                      <button className={`capture-btn flash-btn ${torch.on ? "is-on" : ""}`} type="button" onClick={toggleTorch} disabled={!torch.supported}>
+                        {torch.on ? <FlashlightOff size={18} /> : <Flashlight size={18} />}
+                        Flash
+                      </button>
+                      <button className="capture-btn capture-btn--light" type="button" onClick={() => {
+                        stopCamera();
+                        setScannerOpen(false);
+                      }}>
+                        <CameraOff size={18} />
+                        Cerrar
+                      </button>
+                    </>
                   )}
                 </div>
               </div>
