@@ -230,6 +230,8 @@ function analyzeDominoImage(image, sensitivity) {
 }
 
 function ScoreCard({ index, name, score, last, target, isActive, isLeader, isWinner, onNameBlur, onNameChange, onSelect }) {
+  const clearedForEdit = useRef(false);
+
   return (
     <article
       className={`score-card team-${index} ${isActive ? "is-active" : ""} ${isLeader ? "is-leader" : ""} ${isWinner ? "is-winner" : ""}`}
@@ -254,9 +256,15 @@ function ScoreCard({ index, name, score, last, target, isActive, isLeader, isWin
           onClick={(event) => event.stopPropagation()}
           onFocus={(event) => {
             event.stopPropagation();
-            event.currentTarget.select();
+            if (!clearedForEdit.current) {
+              clearedForEdit.current = true;
+              onNameChange(index, "");
+            }
           }}
-          onBlur={() => onNameBlur(index)}
+          onBlur={() => {
+            clearedForEdit.current = false;
+            onNameBlur(index);
+          }}
           onKeyDown={(event) => event.stopPropagation()}
           onChange={(event) => onNameChange(index, event.target.value)}
         />
