@@ -229,7 +229,7 @@ function analyzeDominoImage(image, sensitivity) {
   };
 }
 
-function ScoreCard({ index, name, score, last, target, isActive, isLeader, isWinner, onNameChange, onSelect }) {
+function ScoreCard({ index, name, score, last, target, isActive, isLeader, isWinner, onNameBlur, onNameChange, onSelect }) {
   return (
     <article
       className={`score-card team-${index} ${isActive ? "is-active" : ""} ${isLeader ? "is-leader" : ""} ${isWinner ? "is-winner" : ""}`}
@@ -252,6 +252,11 @@ function ScoreCard({ index, name, score, last, target, isActive, isLeader, isWin
           value={name}
           aria-label={`Nombre ${name}`}
           onClick={(event) => event.stopPropagation()}
+          onFocus={(event) => {
+            event.stopPropagation();
+            event.currentTarget.select();
+          }}
+          onBlur={() => onNameBlur(index)}
           onKeyDown={(event) => event.stopPropagation()}
           onChange={(event) => onNameChange(index, event.target.value)}
         />
@@ -377,7 +382,15 @@ function App() {
   function updateTeam(index, value) {
     setState((current) => {
       const teams = [...current.teams];
-      teams[index] = value || `Equipo ${index + 1}`;
+      teams[index] = value;
+      return { ...current, teams };
+    });
+  }
+
+  function normalizeTeamName(index) {
+    setState((current) => {
+      const teams = [...current.teams];
+      teams[index] = teams[index].trim() || `Equipo ${index + 1}`;
       return { ...current, teams };
     });
   }
@@ -574,6 +587,7 @@ function App() {
             isActive={winner === team}
             isLeader={totals[team] === leaderScore && leaderScore > 0}
             isWinner={totals[team] >= state.target}
+            onNameBlur={normalizeTeamName}
             onNameChange={updateTeam}
             onSelect={() => setWinner(team)}
           />
