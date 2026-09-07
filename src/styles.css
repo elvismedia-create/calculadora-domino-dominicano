@@ -1129,7 +1129,7 @@ select:focus {
 
 @media (max-width: 460px) {
   .app {
-    width: min(100% - 18px, 1180px);
+    width: min(100% - 22px, 430px);
     padding-top: 10px;
   }
 
@@ -1139,7 +1139,7 @@ select:focus {
 
   .hero-banner img {
     height: auto;
-    aspect-ratio: 16 / 9;
+    aspect-ratio: 4 / 3;
     object-position: 38% 32%;
   }
 
@@ -1153,6 +1153,7 @@ select:focus {
   }
 
   .score-card {
+    aspect-ratio: 1 / 1;
     min-height: 150px;
     padding: 10px;
     border-top-width: 9px;
@@ -1251,5 +1252,20 @@ select:focus {
 
   .capture-btn {
     width: 100%;
+  }
+
+  .camera-box video,
+  .camera-box.has-photo img {
+    min-height: 0;
+    aspect-ratio: 1 / 1;
+  }
+
+  .scan-controls {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .scan-note,
+  .scan-controls .score-submit {
+    grid-column: 1 / -1;
   }
 }
