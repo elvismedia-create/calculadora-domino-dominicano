@@ -289,6 +289,7 @@ function App() {
   const [toast, setToast] = useState("");
   const [winnerMessage, setWinnerMessage] = useState(null);
   const [deleteConfirm, setDeleteConfirm] = useState(null);
+  const [newGameConfirm, setNewGameConfirm] = useState(false);
   const [scanScoreConfirm, setScanScoreConfirm] = useState(null);
   const [scanner, setScanner] = useState({ image: "", dots: [], analyzed: false });
   const [scannerOpen, setScannerOpen] = useState(false);
@@ -480,6 +481,7 @@ function App() {
     setWinner(0);
     setPoints(0);
     setDeleteConfirm(null);
+    setNewGameConfirm(false);
     setScanScoreConfirm(null);
     setWinnerMessage(null);
     setToast("Partida nueva lista.");
@@ -859,7 +861,7 @@ function App() {
               <Undo2 size={18} />
               Deshacer
             </button>
-            <button className="btn ghost" type="button" onClick={resetGame}>
+            <button className="btn ghost" type="button" onClick={() => setNewGameConfirm(true)}>
               <RotateCcw size={18} />
               Nueva partida
             </button>
@@ -888,6 +890,26 @@ function App() {
                 Borrar
               </button>
               <button className="btn secondary" type="button" onClick={() => setDeleteConfirm(null)}>
+                <X size={18} />
+                Cancelar
+              </button>
+            </div>
+          </section>
+        </div>
+      )}
+
+      {newGameConfirm && (
+        <div className="modal-backdrop" role="presentation">
+          <section className="modal confirm-modal" role="dialog" aria-modal="true" aria-labelledby="new-game-title">
+            <RotateCcw size={30} />
+            <h3 id="new-game-title">Confirmar nueva partida</h3>
+            <p>Se borraran todas las puntuaciones actuales y la mesa empezara de cero.</p>
+            <div className="actions">
+              <button className="btn danger" type="button" onClick={resetGame}>
+                <RotateCcw size={18} />
+                Confirmar
+              </button>
+              <button className="btn secondary" type="button" onClick={() => setNewGameConfirm(false)}>
                 <X size={18} />
                 Cancelar
               </button>
