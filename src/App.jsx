@@ -1,10 +1,11 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { Camera, CameraOff, Check, RotateCcw, Save, ScanLine, Trash2, Trophy, Undo2, X } from "lucide-react";
+import { Camera, CameraOff, Check, RotateCcw, Save, Trash2, Trophy, Undo2, X } from "lucide-react";
 import { createRoot } from "react-dom/client";
 import "./styles.css";
 
 const STORE_KEY = "dominican-domino-calculator-react-v1";
 const UPDATE_RELOAD_KEY = "hilario-domino-update-reload";
+const CAMERA_SENSITIVITY = 0;
 
 const initialState = {
   teams: ["Equipo A", "Equipo B"],
@@ -276,7 +277,7 @@ function App() {
   const [winnerMessage, setWinnerMessage] = useState(null);
   const [deleteConfirm, setDeleteConfirm] = useState(null);
   const [scanScoreConfirm, setScanScoreConfirm] = useState(null);
-  const [scanner, setScanner] = useState({ image: "", dots: [], sensitivity: 0, analyzed: false });
+  const [scanner, setScanner] = useState({ image: "", dots: [], analyzed: false });
   const [scannerOpen, setScannerOpen] = useState(false);
   const imageRef = useRef(null);
   const videoRef = useRef(null);
@@ -468,17 +469,6 @@ function App() {
     setToast("Foto desechada. Toma otra cuando quieras.");
   }
 
-  function handleImage(event) {
-    const file = event.target.files?.[0];
-    if (!file) return;
-    const imageUrl = URL.createObjectURL(file);
-    setScanner((current) => {
-      if (current.image) URL.revokeObjectURL(current.image);
-      return { ...current, image: imageUrl, dots: [], analyzed: false };
-    });
-    event.target.value = "";
-  }
-
   async function startCamera() {
     try {
       setScannerOpen(true);
@@ -533,7 +523,7 @@ function App() {
       setToast("Elige una foto primero.");
       return;
     }
-    const result = analyzeDominoImage(imageRef.current, scanner.sensitivity);
+    const result = analyzeDominoImage(imageRef.current, CAMERA_SENSITIVITY);
     const dots = result.dots;
     setScanner((current) => ({ ...current, dots, analyzed: true }));
     if (result.rejected || !dots.length) {
@@ -543,15 +533,26 @@ function App() {
     setToast(`${dots.length} puntos detectados.`);
   }
 
-  function useScanResult() {
-    const total = scanner.dots.length;
-    setPoints(total);
-    clearScanPhoto();
-    setToast(`${total} puntos pasados a la mano.`);
-  }
+  function askScanTeam() {
+    if (!scanner.image || !imageRef.current) {
+      setToast("Toma una foto primero.");
+      return;
+    }
 
-  function useScanAndScore() {
-    const total = scanner.dots.length;
+    const result = scanner.analyzed
+      ? { dots: scanner.dots, rejected: !scanner.dots.length }
+      : analyzeDominoImage(imageRef.current, CAMERA_SENSITIVITY);
+    const total = result.dots.length;
+
+    if (!scanner.analyzed) {
+      setScanner((current) => ({ ...current, dots: result.dots, analyzed: true }));
+    }
+
+    if (result.rejected || !total) {
+      setToast("No detecte puntos claros. Desecha la foto y toma otra.");
+      return;
+    }
+
     setScanScoreConfirm({ total });
   }
 
@@ -682,21 +683,6 @@ function App() {
                     </div>
                   )}
                   <div className="scan-controls">
-                    <label className="field">
-                      <span>Sensibilidad</span>
-                      <input
-                        type="range"
-                        min="0"
-                        max="100"
-                        value={scanner.sensitivity}
-                        onChange={(event) => {
-                          const sensitivity = Number(event.target.value);
-                          setScanner((current) => ({ ...current, sensitivity }));
-                        }}
-                        onMouseUp={scanImage}
-                        onTouchEnd={scanImage}
-                      />
-                    </label>
                     <div className="scan-result">
                       <strong>{scanner.analyzed ? scanner.dots.length : "--"}</strong>
                       <span>puntos</span>
@@ -706,21 +692,10 @@ function App() {
                         Revisa los puntos marcados antes de usar el conteo.
                       </p>
                     )}
-                    <button className="btn ghost" type="button" onClick={scanImage}>
-                      <ScanLine size={18} />
-                      Analizar
-                    </button>
-                    <button className="btn primary" type="button" onClick={useScanResult} disabled={!scanner.analyzed}>
-                      Usar conteo
-                    </button>
-                    <button className="btn primary score-submit" type="button" onClick={useScanAndScore} disabled={!scanner.analyzed || !scanner.dots.length}>
+                    <button className="btn primary score-submit" type="button" onClick={askScanTeam} disabled={!scanner.image}>
                       <Check size={18} />
-                      Elegir bando y anotar
+                      Anotar
                     </button>
-                    <label className="fallback-upload">
-                      Subir imagen
-                      <input type="file" accept="image/*" capture="environment" onChange={handleImage} />
-                    </label>
                   </div>
                 </div>
               )}
