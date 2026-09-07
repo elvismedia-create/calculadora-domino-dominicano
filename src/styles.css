@@ -509,14 +509,13 @@ select:focus {
 
 .scanner-body {
   display: grid;
-  grid-template-columns: minmax(0, .9fr) minmax(0, .9fr) 190px;
+  grid-template-columns: minmax(0, 1fr) 190px;
   gap: 12px;
   align-items: stretch;
   margin-top: 12px;
 }
 
-.camera-box,
-.photo-box {
+.camera-box {
   position: relative;
   border-radius: var(--radius);
   overflow: hidden;
@@ -524,16 +523,16 @@ select:focus {
   background: #eef3fb;
 }
 
-.camera-box {
-  min-height: 220px;
-  display: grid;
-}
-
-.camera-box video {
+.camera-box video,
+.camera-box.has-photo img {
+  display: block;
   width: 100%;
   min-height: 220px;
   height: 100%;
   object-fit: cover;
+}
+
+.camera-box video {
   background: linear-gradient(135deg, rgba(0,45,98,.12), rgba(206,17,38,.1));
 }
 
@@ -542,12 +541,6 @@ select:focus {
   left: 10px;
   right: 10px;
   bottom: 10px;
-}
-
-.photo-box img {
-  display: block;
-  width: 100%;
-  height: auto;
 }
 
 .photo-actions {

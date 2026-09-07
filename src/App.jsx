@@ -498,6 +498,12 @@ function App() {
     setToast("Foto desechada. Toma otra cuando quieras.");
   }
 
+  function retakePhoto() {
+    setScanScoreConfirm(null);
+    clearScanPhoto();
+    window.setTimeout(() => startCamera(), 0);
+  }
+
   async function startCamera() {
     try {
       setScannerOpen(true);
@@ -574,6 +580,7 @@ function App() {
         if (current.image) URL.revokeObjectURL(current.image);
         return { ...current, image: imageUrl, dots: [], analyzed: false };
       });
+      stopCamera();
       setToast("Foto capturada.");
     }, "image/jpeg", 0.92);
   }
@@ -715,22 +722,16 @@ function App() {
 
               {scannerOpen && (
                 <div className="scanner-body">
-                  <div className="camera-box">
-                    <video ref={videoRef} playsInline muted />
-                    <button className="btn primary" type="button" onClick={captureFromCamera}>
-                      <Camera size={18} />
-                      Capturar
-                    </button>
-                  </div>
-                  {scanner.image && (
-                    <div className="photo-box">
+                  <div className={`camera-box ${scanner.image ? "has-photo" : ""}`}>
+                    {scanner.image ? (
+                      <>
                       <img ref={imageRef} src={scanner.image} alt="Fichas para calcular" onLoad={() => analyzeCurrentPhoto({ quiet: true })} />
                       <div className="photo-actions">
                         <button className="photo-action" type="button" onClick={discardPhoto}>
                           <X size={16} />
                           Desechar
                         </button>
-                        <button className="photo-action photo-action--primary" type="button" onClick={captureFromCamera}>
+                        <button className="photo-action photo-action--primary" type="button" onClick={retakePhoto}>
                           <Camera size={16} />
                           Tomar otra
                         </button>
@@ -746,8 +747,17 @@ function App() {
                           }}
                         />
                       ))}
-                    </div>
-                  )}
+                      </>
+                    ) : (
+                      <>
+                        <video ref={videoRef} playsInline muted />
+                        <button className="btn primary" type="button" onClick={captureFromCamera}>
+                          <Camera size={18} />
+                          Capturar
+                        </button>
+                      </>
+                    )}
+                  </div>
                   <div className="scan-controls">
                     <div className="scan-result">
                       <strong>{scanner.analyzed ? scanner.dots.length : "--"}</strong>

@@ -1,4 +1,4 @@
-const CACHE_NAME = "domino-rd-v15";
+const CACHE_NAME = "domino-rd-v16";
 const APP_SHELL = [
   "/",
   "/manifest.webmanifest",
