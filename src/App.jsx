@@ -296,6 +296,7 @@ function App() {
   const imageRef = useRef(null);
   const videoRef = useRef(null);
   const streamRef = useRef(null);
+  const captureIdRef = useRef(0);
 
   const totals = useMemo(
     () =>
@@ -555,11 +556,14 @@ function App() {
       setToast("Abre la camara primero.");
       return;
     }
+    captureIdRef.current += 1;
+    const captureId = captureIdRef.current;
     const canvas = document.createElement("canvas");
     canvas.width = video.videoWidth;
     canvas.height = video.videoHeight;
     canvas.getContext("2d").drawImage(video, 0, 0, canvas.width, canvas.height);
     canvas.toBlob((blob) => {
+      if (captureId !== captureIdRef.current) return;
       if (!blob) {
         setToast("No pude capturar la foto.");
         return;
@@ -574,22 +578,37 @@ function App() {
     }, "image/jpeg", 0.92);
   }
 
+  function analyzeCurrentPhoto({ quiet = false } = {}) {
+    if (!imageRef.current || !imageRef.current.complete || !imageRef.current.naturalWidth) {
+      if (!quiet) setToast("Espera un momento, la foto se esta cargando.");
+      return null;
+    }
+
+    const result = analyzeDominoImage(imageRef.current, CAMERA_SENSITIVITY);
+    setScanner((current) => ({ ...current, dots: result.dots, analyzed: true }));
+
+    if (!quiet) {
+      if (result.rejected || !result.dots.length) {
+        setToast("No detecte puntos claros. Desecha la foto y toma otra.");
+      } else {
+        setToast(`${result.dots.length} puntos detectados.`);
+      }
+    }
+
+    return result;
+  }
+
   function askScanTeam() {
     if (!scanner.image || !imageRef.current) {
       setToast("Toma una foto primero.");
       return;
     }
-    if (!imageRef.current.complete || !imageRef.current.naturalWidth) {
-      setToast("Espera un momento, la foto se esta cargando.");
-      return;
-    }
 
-    const result = analyzeDominoImage(imageRef.current, CAMERA_SENSITIVITY);
+    const result = analyzeCurrentPhoto();
+    if (!result) return;
     const total = result.dots.length;
-    setScanner((current) => ({ ...current, dots: result.dots, analyzed: true }));
 
     if (result.rejected || !total) {
-      setToast("No detecte puntos claros. Desecha la foto y toma otra.");
       return;
     }
 
@@ -705,7 +724,7 @@ function App() {
                   </div>
                   {scanner.image && (
                     <div className="photo-box">
-                      <img ref={imageRef} src={scanner.image} alt="Fichas para calcular" />
+                      <img ref={imageRef} src={scanner.image} alt="Fichas para calcular" onLoad={() => analyzeCurrentPhoto({ quiet: true })} />
                       <div className="photo-actions">
                         <button className="photo-action" type="button" onClick={discardPhoto}>
                           <X size={16} />

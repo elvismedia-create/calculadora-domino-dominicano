@@ -585,6 +585,7 @@ select:focus {
 
 .detected-dot {
   position: absolute;
+  z-index: 1;
   aspect-ratio: 1;
   min-width: 8px;
   border: 2px solid var(--flag-red);
