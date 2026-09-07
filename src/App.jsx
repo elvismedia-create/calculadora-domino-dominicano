@@ -379,9 +379,12 @@ function App() {
   useEffect(() => {
     return () => {
       if (scanner.image) URL.revokeObjectURL(scanner.image);
-      stopCamera();
     };
   }, [scanner.image]);
+
+  useEffect(() => {
+    return () => stopCamera();
+  }, []);
 
   function lastFor(team) {
     return [...state.rounds].reverse().find((round) => round.team === team)?.total || 0;
@@ -486,6 +489,7 @@ function App() {
   }
 
   function discardPhoto() {
+    setScanScoreConfirm(null);
     clearScanPhoto();
     setToast("Foto desechada. Toma otra cuando quieras.");
   }
@@ -531,6 +535,7 @@ function App() {
         return;
       }
       const imageUrl = URL.createObjectURL(blob);
+      setScanScoreConfirm(null);
       setScanner((current) => {
         if (current.image) URL.revokeObjectURL(current.image);
         return { ...current, image: imageUrl, dots: [], analyzed: false };
@@ -539,35 +544,19 @@ function App() {
     }, "image/jpeg", 0.92);
   }
 
-  function scanImage() {
-    if (!imageRef.current) {
-      setToast("Elige una foto primero.");
-      return;
-    }
-    const result = analyzeDominoImage(imageRef.current, CAMERA_SENSITIVITY);
-    const dots = result.dots;
-    setScanner((current) => ({ ...current, dots, analyzed: true }));
-    if (result.rejected || !dots.length) {
-      setToast("No detecte puntos. Acerca las fichas o mueve la sensibilidad.");
-      return;
-    }
-    setToast(`${dots.length} puntos detectados.`);
-  }
-
   function askScanTeam() {
     if (!scanner.image || !imageRef.current) {
       setToast("Toma una foto primero.");
       return;
     }
-
-    const result = scanner.analyzed
-      ? { dots: scanner.dots, rejected: !scanner.dots.length }
-      : analyzeDominoImage(imageRef.current, CAMERA_SENSITIVITY);
-    const total = result.dots.length;
-
-    if (!scanner.analyzed) {
-      setScanner((current) => ({ ...current, dots: result.dots, analyzed: true }));
+    if (!imageRef.current.complete || !imageRef.current.naturalWidth) {
+      setToast("Espera un momento, la foto se esta cargando.");
+      return;
     }
+
+    const result = analyzeDominoImage(imageRef.current, CAMERA_SENSITIVITY);
+    const total = result.dots.length;
+    setScanner((current) => ({ ...current, dots: result.dots, analyzed: true }));
 
     if (result.rejected || !total) {
       setToast("No detecte puntos claros. Desecha la foto y toma otra.");
@@ -680,7 +669,7 @@ function App() {
                   </div>
                   {scanner.image && (
                     <div className="photo-box">
-                      <img ref={imageRef} src={scanner.image} alt="Fichas para calcular" onLoad={scanImage} />
+                      <img ref={imageRef} src={scanner.image} alt="Fichas para calcular" />
                       <div className="photo-actions">
                         <button className="photo-action" type="button" onClick={discardPhoto}>
                           <X size={16} />
