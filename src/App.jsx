@@ -5,7 +5,7 @@ import "./styles.css";
 
 const STORE_KEY = "dominican-domino-calculator-react-v1";
 const UPDATE_RELOAD_KEY = "hilario-domino-update-reload";
-const CAMERA_SENSITIVITY = 0;
+const CAMERA_SENSITIVITY = 10;
 
 const initialState = {
   teams: ["Equipo A", "Equipo B"],
