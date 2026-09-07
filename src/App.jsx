@@ -107,6 +107,37 @@ function analyzeDominoImage(image, sensitivity) {
     return sum / ((x1 - x0) * (y1 - y0));
   }
 
+  function hasDominoFaceAround(centerX, centerY, radius) {
+    const outer = Math.max(10, Math.round(radius * 3.6));
+    const innerSquared = radius * radius * 2.1;
+    const outerSquared = outer * outer;
+    let samples = 0;
+    let facePixels = 0;
+
+    for (let y = Math.max(0, Math.round(centerY - outer)); y <= Math.min(height - 1, Math.round(centerY + outer)); y += 2) {
+      for (let x = Math.max(0, Math.round(centerX - outer)); x <= Math.min(width - 1, Math.round(centerX + outer)); x += 2) {
+        const dx = x - centerX;
+        const dy = y - centerY;
+        const distance = dx * dx + dy * dy;
+        if (distance < innerSquared || distance > outerSquared) continue;
+
+        const pixel = (y * width + x) * 4;
+        const red = data[pixel];
+        const green = data[pixel + 1];
+        const blue = data[pixel + 2];
+        const brightest = Math.max(red, green, blue);
+        const darkest = Math.min(red, green, blue);
+        const value = luma[y * width + x];
+        const neutralLight = value > 132 && brightest - darkest < 92;
+        const tooWoody = red - blue > 82 && green - blue > 28;
+        samples += 1;
+        if (neutralLight && !tooWoody) facePixels += 1;
+      }
+    }
+
+    return samples > 0 && facePixels / samples > 0.32;
+  }
+
   // La sensibilidad del control (0-100) se traduce en cuanto contraste exigimos.
   const contrast = Math.max(18, Math.min(90, 75 - sensitivity * 0.5));
   const dark = new Uint8Array(total);
@@ -190,6 +221,7 @@ function analyzeDominoImage(image, sensitivity) {
     const centerY = (minY + maxY) / 2;
     // Un punto tiene que ser claramente mas oscuro que la cara de la ficha.
     if (localMean(Math.round(centerX), Math.round(centerY)) - lumaSum / area < 26) continue;
+    if (!hasDominoFaceAround(centerX, centerY, radius)) continue;
 
     candidates.push({ centerX, centerY, radius, area });
   }
@@ -293,7 +325,7 @@ function App() {
   const [scanScoreConfirm, setScanScoreConfirm] = useState(null);
   const [scanner, setScanner] = useState({ image: "", dots: [], analyzed: false });
   const [scannerOpen, setScannerOpen] = useState(false);
-  const [torch, setTorch] = useState({ supported: false, on: false });
+  const [torch, setTorch] = useState({ available: false, on: false });
   const imageRef = useRef(null);
   const videoRef = useRef(null);
   const streamRef = useRef(null);
@@ -515,9 +547,7 @@ function App() {
         audio: false,
       });
       streamRef.current = stream;
-      const videoTrack = stream.getVideoTracks()[0];
-      const capabilities = videoTrack?.getCapabilities?.() || {};
-      setTorch({ supported: Boolean(capabilities.torch), on: false });
+      setTorch({ available: true, on: false });
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
         await videoRef.current.play();
@@ -529,7 +559,7 @@ function App() {
   }
 
   function stopCamera() {
-    setTorch({ supported: false, on: false });
+    setTorch({ available: false, on: false });
     streamRef.current?.getTracks().forEach((track) => track.stop());
     streamRef.current = null;
     if (videoRef.current) videoRef.current.srcObject = null;
@@ -543,7 +573,6 @@ function App() {
     }
     const capabilities = track.getCapabilities?.() || {};
     if (!capabilities.torch) {
-      setTorch({ supported: false, on: false });
       setToast("Este movil no deja encender el flash desde la app.");
       return;
     }
@@ -551,7 +580,7 @@ function App() {
     const nextTorch = !torch.on;
     try {
       await track.applyConstraints({ advanced: [{ torch: nextTorch }] });
-      setTorch({ supported: true, on: nextTorch });
+      setTorch({ available: true, on: nextTorch });
       setToast(nextTorch ? "Flash encendido." : "Flash apagado.");
     } catch {
       setToast("No pude cambiar el flash en este navegador.");
@@ -706,7 +735,7 @@ function App() {
                   </button>
                   {scannerOpen && (
                     <>
-                      <button className={`capture-btn flash-btn ${torch.on ? "is-on" : ""}`} type="button" onClick={toggleTorch} disabled={!torch.supported}>
+                      <button className={`capture-btn flash-btn ${torch.on ? "is-on" : ""}`} type="button" onClick={toggleTorch} disabled={!torch.available}>
                         {torch.on ? <FlashlightOff size={18} /> : <Flashlight size={18} />}
                         Flash
                       </button>
@@ -749,6 +778,14 @@ function App() {
                           }}
                         />
                       ))}
+                      <div className="camera-score">
+                        <strong>{scanner.analyzed ? scanner.dots.length : "--"}</strong>
+                        <span>puntos</span>
+                        <button className="btn primary score-submit" type="button" onClick={askScanTeam}>
+                          <Check size={18} />
+                          Anotar
+                        </button>
+                      </div>
                       </>
                     ) : (
                       <>
@@ -759,21 +796,6 @@ function App() {
                         </button>
                       </>
                     )}
-                  </div>
-                  <div className="scan-controls">
-                    <div className="scan-result">
-                      <strong>{scanner.analyzed ? scanner.dots.length : "--"}</strong>
-                      <span>puntos</span>
-                    </div>
-                    {scanner.analyzed && (
-                      <p className="scan-note">
-                        Revisa los puntos marcados antes de usar el conteo.
-                      </p>
-                    )}
-                    <button className="btn primary score-submit" type="button" onClick={askScanTeam} disabled={!scanner.image}>
-                      <Check size={18} />
-                      Anotar
-                    </button>
                   </div>
                 </div>
               )}
